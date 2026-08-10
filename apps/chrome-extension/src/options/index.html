@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings · fuongz's Extensions</title>
+    <link rel="stylesheet" href="../popup/style.css" />
+  </head>
+  <body class="min-h-screen bg-bg font-sans text-sm text-text">
+    <main class="mx-auto flex min-h-screen max-w-[1200px] items-center p-3 sm:p-6">
+      <div class="grid w-full overflow-hidden rounded-xl border border-transparent bg-surface shadow-raised md:min-h-[680px] md:grid-cols-[270px_minmax(0,1fr)]">
+        <aside class="border-b border-border bg-sunken p-5 md:border-r md:border-b-0 md:p-6">
+          <p class="text-lg font-[650] tracking-tight">Settings</p>
+          <nav class="mt-5" aria-label="Settings sections">
+            <a href="#general" aria-current="page" class="flex items-center gap-3 rounded-lg bg-accent-soft px-3.5 py-3 text-sm font-semibold">
+              <span class="grid h-6 w-6 place-items-center rounded-md border-2 border-current text-[10px]" aria-hidden="true">⚙</span>
+              General
+            </a>
+          </nav>
+          <div class="mt-8">
+            <p class="px-3.5 text-xs font-semibold tracking-wide text-muted uppercase">Extensions</p>
+            <a href="#connection" class="mt-2 flex items-center gap-3 rounded-lg px-3.5 py-3 text-sm text-muted transition hover:bg-accent-soft hover:text-text">
+              <span class="grid h-6 w-6 place-items-center rounded-md border border-current text-[11px]" aria-hidden="true">⌘</span>
+              Connection
+            </a>
+          </div>
+          <p class="mt-8 px-3.5 text-xs leading-relaxed text-muted">Your API key stays only in this browser profile and is never synced with Chrome.</p>
+        </aside>
+
+        <section id="general" class="min-w-0 p-5 sm:p-8 md:p-10" aria-labelledby="settings-title">
+          <header class="mb-8 flex items-center justify-between gap-4">
+            <div>
+              <p class="mb-1 text-xs font-semibold tracking-wide text-muted uppercase">fuongz's Extensions</p>
+              <h1 id="settings-title" class="text-2xl font-[650] tracking-tight">General</h1>
+            </div>
+            <button id="close-settings" type="button" class="btn btn-primary btn-icon text-lg leading-none" aria-label="Close settings">×</button>
+          </header>
+
+          <section class="mb-8 rounded-xl border border-transparent bg-sunken p-5 sm:p-6" aria-labelledby="privacy-title">
+            <p class="mb-3 inline-flex rounded-md bg-accent-soft px-2.5 py-1 text-xs font-semibold text-muted">Privacy</p>
+            <h2 id="privacy-title" class="text-xl font-[650] tracking-tight">One key, one URL</h2>
+            <p class="mt-1.5 max-w-2xl leading-relaxed text-muted">This extension no longer holds provider credentials. It calls your generation API, which decides whether a request runs on your own OpenRouter and Replicate keys or on the free daily allowance.</p>
+          </section>
+
+          <section id="connection" aria-labelledby="connection-title">
+            <div class="mb-3 px-1">
+              <h2 id="connection-title" class="text-lg font-[650] tracking-tight">Connection</h2>
+              <p class="mt-1 text-sm leading-relaxed text-muted">Paste the API base URL and a key created on the web app's API keys page.</p>
+            </div>
+            <div class="overflow-hidden rounded-xl border border-transparent bg-sunken">
+              <form id="connection-form" class="flex flex-col gap-4 p-5 sm:p-6">
+                <label class="flex flex-col gap-1.5">
+                  <span class="text-xs font-semibold">API base URL</span>
+                  <input id="api-base-url" class="rounded-md border border-border bg-surface px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/15" type="url" autocomplete="off" spellcheck="false" placeholder="https://fuongz-api.example.workers.dev" required />
+                </label>
+                <label class="flex flex-col gap-1.5">
+                  <span class="text-xs font-semibold">API key</span>
+                  <input id="api-key" class="rounded-md border border-border bg-surface px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/15" type="password" autocomplete="off" spellcheck="false" placeholder="fz_…" />
+                </label>
+                <p id="connection-status" class="text-xs text-muted" aria-live="polite"></p>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button type="submit" class="btn btn-primary">Save connection</button>
+                  <button id="test-connection" type="button" class="btn btn-ghost">Test connection</button>
+                  <button id="clear-connection" type="button" class="remove-key btn btn-ghost btn-danger" hidden>Disconnect</button>
+                </div>
+              </form>
+
+              <div class="flex flex-col gap-3 border-t border-border p-5 sm:p-6">
+                <label class="flex items-start gap-3">
+                  <input id="sync-toggle" type="checkbox" class="mt-0.5 h-4 w-4 accent-accent" />
+                  <span>
+                    <span class="text-sm font-semibold">Sync generations to the web app</span>
+                    <span class="mt-1 block text-xs leading-relaxed text-muted">On, the prompt and the generated image are kept in your account and appear under Generations. Off, they are used once and not stored — what each request cost is still recorded either way.</span>
+                  </span>
+                </label>
+              </div>
+
+              <div id="legacy-keys" class="flex flex-col gap-3 border-t border-border p-5 sm:p-6" hidden>
+                <div>
+                  <h3 class="text-base font-semibold">Old provider keys are still stored here</h3>
+                  <p id="legacy-keys-detail" class="mt-1 text-xs leading-relaxed text-muted"></p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button id="clear-legacy-keys" type="button" class="btn btn-ghost btn-danger">Remove them</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

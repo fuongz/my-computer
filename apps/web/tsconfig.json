@@ -1,0 +1,15 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		// `wrangler types` adds itself here on every run and gets the path wrong (the
+		// file it writes lives under src/). Fixed rather than removed: without it the
+		// generated `Env` interface is not in the program at all.
+		"types": ["vite/client", "@types/node", "./src/worker-configuration.d.ts"],
+		// Mirrors `imports` in package.json. `tsc` reads ONLY this; every runtime
+		// reads only that. Two declarations, no third.
+		"paths": {
+			"#/*": ["./src/*"]
+		}
+	},
+	"include": ["src", "vite.config.ts"]
+}

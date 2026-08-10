@@ -1,0 +1,428 @@
+/*
+ * Pinterest Dark
+ * ==============
+ *
+ * Injected at document_start and scoped to html[data-pinterest-dark="on"] —
+ * the content script sets that attribute before first paint and removes it when
+ * the popup toggle goes off, so the whole theme is one attribute away from
+ * disappearing.
+ *
+ * HOW THIS WORKS
+ *
+ * Pinterest's UI is built on the Gestalt design system, whose colors resolve
+ * through three layers:
+ *
+ *     --comp-button-color-background-light-default
+ *       -> var(--sema-color-background-light)
+ *            -> var(--base-color-grayscale-0)   ->  #fff
+ *
+ * Every component color bottoms out in a 13-step grayscale ramp,
+ * --base-color-grayscale-0 (white) through -500 (black). So rather than chase
+ * hundreds of obfuscated class names, this file **inverts that one ramp**. The
+ * ~350 semantic tokens and ~40 component tokens built on top follow for free,
+ * which is what gets modals, buttons, banners and popovers right without ever
+ * naming them.
+ *
+ * The exceptions are handled in section 3: a handful of tokens mean a literal
+ * color rather than a position on the ramp ("white text over a photo"), and
+ * those have to be pinned back.
+ *
+ * Deliberately NOT used: filter: invert(). It wrecks the photography that is
+ * the entire point of Pinterest.
+ *
+ * Token names were read off a live pinterest.com session; if Pinterest renames
+ * the ramp this file degrades to the section 5 fallbacks rather than breaking.
+ * See scripts/preview-theme.ts for how to re-check.
+ */
+
+/* ------------------------------------------------------------------ *
+ * 1. Palette
+ * ------------------------------------------------------------------ */
+
+html[data-pinterest-dark="on"] {
+	--pdt-bg: #11131a;
+	--pdt-surface: #191c24;
+	--pdt-surface-raised: #21242e;
+	--pdt-text: #f5f7fa;
+	--pdt-brand: #e60023;
+
+	/* Native form controls, scrollbars and the like follow this. */
+	color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------ *
+ * 2. The grayscale ramp, inverted
+ *
+ * Step 0 was white and is now the page background; step 500 was black and is
+ * now the brightest text. Everything Pinterest draws is some point on here.
+ * ------------------------------------------------------------------ */
+
+html[data-pinterest-dark="on"] {
+	--base-color-grayscale-0: #11131a;
+	--base-color-grayscale-25: #15181f;
+	--base-color-grayscale-50: #191c24;
+	--base-color-grayscale-100: #21242e;
+	--base-color-grayscale-150: #2f3441;
+	--base-color-grayscale-200: #4a5060;
+	--base-color-grayscale-250: #7a8090;
+	--base-color-grayscale-300: #a6abb6;
+	--base-color-grayscale-350: #c2c6ce;
+	--base-color-grayscale-400: #d8dbe2;
+	--base-color-grayscale-450: #e4e6eb;
+	--base-color-grayscale-475: #eef0f3;
+	--base-color-grayscale-500: #f5f7fa;
+
+	/* Pinterest ships an identical opaque copy of the ramp under this name. */
+	--base-color-grayscale-translucent-0: #11131a;
+	--base-color-grayscale-translucent-25: #15181f;
+	--base-color-grayscale-translucent-50: #191c24;
+	--base-color-grayscale-translucent-100: #21242e;
+	--base-color-grayscale-translucent-150: #2f3441;
+	--base-color-grayscale-translucent-200: #4a5060;
+	--base-color-grayscale-translucent-250: #7a8090;
+	--base-color-grayscale-translucent-300: #a6abb6;
+	--base-color-grayscale-translucent-350: #c2c6ce;
+	--base-color-grayscale-translucent-400: #d8dbe2;
+	--base-color-grayscale-translucent-450: #e4e6eb;
+	--base-color-grayscale-translucent-475: #eef0f3;
+	--base-color-grayscale-translucent-500: #f5f7fa;
+
+	/* Hover moves one notch *lighter* in dark mode, not darker. */
+	--base-color-hover-grayscale-0: #191c24;
+	--base-color-hover-grayscale-25: #191c24;
+	--base-color-hover-grayscale-50: #21242e;
+	--base-color-hover-grayscale-100: #2a2e3a;
+	--base-color-hover-grayscale-150: #3a4050;
+	--base-color-hover-grayscale-200: #59606f;
+	--base-color-hover-grayscale-250: #8a90a0;
+	--base-color-hover-grayscale-300: #b4b9c3;
+	--base-color-hover-grayscale-350: #ced2d9;
+	--base-color-hover-grayscale-400: #e2e5ea;
+	--base-color-hover-grayscale-450: #edeff2;
+	--base-color-hover-grayscale-475: #f6f7f9;
+	--base-color-hover-grayscale-500: #ffffff;
+
+	--base-color-hover-grayscale-translucent-0: #191c24;
+	--base-color-hover-grayscale-translucent-25: #191c24;
+	--base-color-hover-grayscale-translucent-50: #21242e;
+	--base-color-hover-grayscale-translucent-100: #2a2e3a;
+	--base-color-hover-grayscale-translucent-150: #3a4050;
+	--base-color-hover-grayscale-translucent-200: #59606f;
+	--base-color-hover-grayscale-translucent-250: #8a90a0;
+	--base-color-hover-grayscale-translucent-300: #b4b9c3;
+	--base-color-hover-grayscale-translucent-350: #ced2d9;
+	--base-color-hover-grayscale-translucent-400: #e2e5ea;
+	--base-color-hover-grayscale-translucent-450: #edeff2;
+	--base-color-hover-grayscale-translucent-475: #f6f7f9;
+	--base-color-hover-grayscale-translucent-500: #ffffff;
+
+	/* Pressed goes one further again. */
+	--base-color-pressed-grayscale-0: #21242e;
+	--base-color-pressed-grayscale-25: #21242e;
+	--base-color-pressed-grayscale-50: #2a2e3a;
+	--base-color-pressed-grayscale-100: #343945;
+	--base-color-pressed-grayscale-150: #454b5c;
+	--base-color-pressed-grayscale-200: #666d7c;
+	--base-color-pressed-grayscale-250: #9aa0ae;
+	--base-color-pressed-grayscale-300: #c0c4cd;
+	--base-color-pressed-grayscale-350: #d8dbe1;
+	--base-color-pressed-grayscale-400: #eaecf0;
+	--base-color-pressed-grayscale-450: #f3f4f7;
+	--base-color-pressed-grayscale-475: #ffffff;
+	--base-color-pressed-grayscale-500: #ffffff;
+
+	--base-color-pressed-grayscale-translucent-0: #21242e;
+	--base-color-pressed-grayscale-translucent-25: #21242e;
+	--base-color-pressed-grayscale-translucent-50: #2a2e3a;
+	--base-color-pressed-grayscale-translucent-100: #343945;
+	--base-color-pressed-grayscale-translucent-150: #454b5c;
+	--base-color-pressed-grayscale-translucent-200: #666d7c;
+	--base-color-pressed-grayscale-translucent-250: #9aa0ae;
+	--base-color-pressed-grayscale-translucent-300: #c0c4cd;
+	--base-color-pressed-grayscale-translucent-350: #d8dbe1;
+	--base-color-pressed-grayscale-translucent-400: #eaecf0;
+	--base-color-pressed-grayscale-translucent-450: #f3f4f7;
+	--base-color-pressed-grayscale-translucent-475: #ffffff;
+	--base-color-pressed-grayscale-translucent-500: #ffffff;
+}
+
+/* ------------------------------------------------------------------ *
+ * 3. Tokens that mean a literal color, not a ramp position
+ *
+ * "Light" and "dark" here describe what the color *is*, not which theme it
+ * belongs to — they paint controls and captions that sit on top of photos,
+ * where the backdrop is a pin image rather than the page. Inverting them would
+ * put black text on a dark photo, so they get pinned back.
+ * ------------------------------------------------------------------ */
+
+html[data-pinterest-dark="on"] {
+	--sema-color-text-light: #fff;
+	--sema-color-icon-light: #fff;
+	--sema-color-background-light: #fff;
+
+	--sema-color-text-dark: #000;
+	--sema-color-icon-dark: #000;
+	--sema-color-background-dark: #000;
+
+	/*
+   * The "inverse" family is pinned rather than inverted, because Pinterest uses
+   * it for two different jobs: the high-contrast grayscale pill (Log in, Sign
+   * up) *and* the label on every brand-red button (Save, Continue, Join). Left
+   * inverted, text-inverse becomes near-black — unreadable on red, which no
+   * amount of dark theming should change. So the pair is pinned back to white
+   * text, with background-inverse moved to a dark grey that still reads as a
+   * raised pill against the page.
+   */
+	--sema-color-text-inverse: #fff;
+	--sema-color-icon-inverse: #fff;
+	--sema-color-border-inverse: #fff;
+	--sema-color-background-inverse: #2f3441;
+}
+
+/*
+ * Labels that sit on a fixed brand color rather than on a grayscale surface.
+ * The red Save button stays red in dark mode, so its text has to stay white —
+ * inverting it produces near-black text on Pinterest red.
+ */
+html[data-pinterest-dark="on"] {
+	--comp-button-color-text-primary-default: #fff;
+	--comp-button-color-text-primary-selected: #fff;
+	--comp-button-color-icon-primary-default: #fff;
+	--comp-button-color-icon-primary-selected: #fff;
+
+	--comp-button-color-text-shopping-default: #fff;
+	--comp-button-color-text-shopping-selected: #fff;
+	--comp-button-color-icon-shopping-default: #fff;
+	--comp-button-color-icon-shopping-selected: #fff;
+
+	--comp-buttontoggle-color-text-save-enabled-strong: #fff;
+	--comp-buttontoggle-color-icon-save-enabled-strong: #fff;
+	--comp-buttontoggle-color-hover-text-save-enabled-strong: #fff;
+	--comp-buttontoggle-color-hover-icon-save-enabled-strong: #fff;
+	--comp-buttontoggle-color-pressed-text-save-enabled-strong: #fff;
+	--comp-buttontoggle-color-pressed-icon-save-enabled-strong: #fff;
+
+	/*
+   * The white pill controls Pinterest floats over pin images — kept literally
+   * white-on-black, to pair with --sema-color-background-light above.
+   */
+	--comp-button-color-text-light-default: #000;
+	--comp-button-color-icon-light-default: #000;
+	--comp-buttontoggle-color-text-save-enabled-deselected: #fff;
+	--comp-buttontoggle-color-icon-save-enabled-deselected: #fff;
+	--comp-buttontoggle-color-text-save-enabled-subtle: #fff;
+	--comp-buttontoggle-color-icon-save-enabled-subtle: #fff;
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. Hardcoded translucent washes
+ *
+ * These are literal hsla() values rather than ramp references, so the
+ * inversion above never reaches them. They frost sticky headers and overlays,
+ * and left alone they show up as milky white smears.
+ * ------------------------------------------------------------------ */
+
+html[data-pinterest-dark="on"] {
+	--sema-color-background-elevated-scrim-opaque: rgba(17, 19, 26, 0.8);
+	--sema-color-background-elevated-scrim-opaque-gradient-from: rgba(
+		17,
+		19,
+		26,
+		0.8
+	);
+	--sema-color-background-elevated-scrim-opaque-gradient-to: rgba(
+		17,
+		19,
+		26,
+		0.8
+	);
+	--sema-color-background-elevated-scrim-translucent: rgba(17, 19, 26, 0.4);
+
+	--sema-color-background-elevated-wash-50-default: rgba(25, 28, 36, 0.5);
+	--sema-color-background-elevated-wash-50-light: rgba(25, 28, 36, 0.5);
+	--sema-color-background-elevated-wash-70-default: rgba(25, 28, 36, 0.7);
+	--sema-color-background-elevated-wash-70-light: rgba(25, 28, 36, 0.7);
+	--sema-color-background-elevated-wash-image-tint: rgba(255, 255, 255, 0.04);
+
+	--sema-color-hover-background-elevated-scrim-opaque: rgba(33, 36, 46, 0.8);
+	--sema-color-hover-background-elevated-scrim-opaque-gradient-from: rgba(
+		33,
+		36,
+		46,
+		0.8
+	);
+	--sema-color-hover-background-elevated-scrim-opaque-gradient-to: rgba(
+		33,
+		36,
+		46,
+		0.8
+	);
+	--sema-color-hover-background-elevated-scrim-translucent: rgba(
+		33,
+		36,
+		46,
+		0.4
+	);
+	--sema-color-hover-background-elevated-wash-50-default: rgba(33, 36, 46, 0.5);
+	--sema-color-hover-background-elevated-wash-50-light: rgba(33, 36, 46, 0.5);
+	--sema-color-hover-background-elevated-wash-70-default: rgba(33, 36, 46, 0.7);
+	--sema-color-hover-background-elevated-wash-70-light: rgba(33, 36, 46, 0.7);
+	--sema-color-hover-background-elevated-wash-image-tint: rgba(
+		255,
+		255,
+		255,
+		0.09
+	);
+
+	--sema-color-pressed-background-elevated-scrim-opaque: rgba(42, 46, 58, 0.8);
+	--sema-color-pressed-background-elevated-scrim-opaque-gradient-from: rgba(
+		42,
+		46,
+		58,
+		0.8
+	);
+	--sema-color-pressed-background-elevated-scrim-opaque-gradient-to: rgba(
+		42,
+		46,
+		58,
+		0.8
+	);
+	--sema-color-pressed-background-elevated-scrim-translucent: rgba(
+		42,
+		46,
+		58,
+		0.4
+	);
+	--sema-color-pressed-background-elevated-wash-50-default: rgba(
+		42,
+		46,
+		58,
+		0.5
+	);
+	--sema-color-pressed-background-elevated-wash-50-light: rgba(42, 46, 58, 0.5);
+	--sema-color-pressed-background-elevated-wash-70-default: rgba(
+		42,
+		46,
+		58,
+		0.7
+	);
+	--sema-color-pressed-background-elevated-wash-70-light: rgba(42, 46, 58, 0.7);
+	--sema-color-pressed-background-elevated-wash-image-tint: rgba(
+		255,
+		255,
+		255,
+		0.14
+	);
+
+	/* Modal scrim: Pinterest's is already dark, just deepen it. */
+	--sema-elevation-shadow-floating: 0 3px 12px 0 rgba(0, 0, 0, 0.6);
+	--sema-elevation-shadow-raised: 0 1.5px 6px 0 rgba(0, 0, 0, 0.5);
+	--sema-elevation-shadow-surface: 0 0.5px 3px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* ------------------------------------------------------------------ *
+ * 5. Structural fallbacks
+ *
+ * The token remap handles components. These three rules handle the document
+ * itself, which no token covers — and they are what actually stops the white
+ * flash, because they apply the instant the stylesheet parses.
+ * ------------------------------------------------------------------ */
+
+html[data-pinterest-dark="on"],
+html[data-pinterest-dark="on"] body {
+	background-color: var(--pdt-bg) !important;
+}
+
+/* The app shell, painted white directly rather than through a token. */
+html[data-pinterest-dark="on"] #__PWS_ROOT__,
+html[data-pinterest-dark="on"] #mainContainer,
+html[data-pinterest-dark="on"] [data-test-id="main-container"] {
+	background-color: var(--pdt-bg) !important;
+}
+
+/* Media is never touched — no washing out the pins themselves. */
+html[data-pinterest-dark="on"] img,
+html[data-pinterest-dark="on"] video,
+html[data-pinterest-dark="on"] canvas {
+	background-color: transparent !important;
+}
+
+/* ------------------------------------------------------------------ *
+ * 6. Small corrections
+ * ------------------------------------------------------------------ */
+
+/*
+ * The signed-out marketing landing at pinterest.com/ is not built on the
+ * design system — its bands carry an inline `background: rgb(255,255,255)` and
+ * hardcoded near-black headings, so neither the ramp inversion nor the token
+ * remap reaches them. Scoped to .section so the blast radius stays on that one
+ * page rather than leaking into the app.
+ */
+html[data-pinterest-dark="on"] [style*="background: rgb(255, 255, 255)"],
+html[data-pinterest-dark="on"] [style*="background-color: rgb(255, 255, 255)"] {
+	background-color: var(--pdt-bg) !important;
+}
+
+html[data-pinterest-dark="on"] div.section {
+	color: var(--pdt-text) !important;
+}
+
+html[data-pinterest-dark="on"]
+	div.section
+	:is(h1, h2, h3, h4, h5, p, span, li) {
+	color: inherit !important;
+}
+
+/*
+ * The page footer draws on --sema-color-background-inverse, which the ramp
+ * inversion correctly turns light — that is right for the Log in / Sign up
+ * pills that share the token, and wrong for a full-width band. Overriding the
+ * element rather than the token keeps both happy.
+ */
+html[data-pinterest-dark="on"] footer {
+	background-color: var(--pdt-bg) !important;
+	color: var(--pdt-text) !important;
+}
+
+html[data-pinterest-dark="on"] footer :is(a, p, span, h2, h3, h4, li) {
+	color: inherit !important;
+}
+
+/*
+ * Decorative white fades, written as inline gradients rather than tokens.
+ * Matching on the inline style is unavoidably brittle; if Pinterest changes
+ * these values the fades simply return to white rather than anything breaking.
+ */
+html[data-pinterest-dark="on"] [style*="linear-gradient(rgb(246, 246, 243)"] {
+	background-image: linear-gradient(
+		var(--pdt-bg) 0%,
+		rgba(17, 19, 26, 0) 100%
+	) !important;
+}
+
+html[data-pinterest-dark="on"]
+	[style*="linear-gradient(rgba(255, 255, 255, 0)"] {
+	background-image: linear-gradient(
+		rgba(17, 19, 26, 0) 0%,
+		rgba(17, 19, 26, 0.3) 40%,
+		var(--pdt-bg) 100%
+	) !important;
+}
+
+/* Placeholder blocks shown while a pin image streams in. */
+html[data-pinterest-dark="on"] [class*="skeleton"],
+html[data-pinterest-dark="on"] [class*="Skeleton"] {
+	background-color: var(--pdt-surface-raised) !important;
+}
+
+html[data-pinterest-dark="on"] ::selection {
+	background-color: var(--pdt-brand);
+	color: #fff;
+}
+
+/*
+ * The "How was this made?" dialog used to be pinned to the bottom of this file.
+ * It now lives in analysis-dialog.css, which build:tools:assets concatenates
+ * onto this one — the manifest declares a single stylesheet for the content
+ * bundle, so they must ship as one file even though only this half is a theme.
+ */

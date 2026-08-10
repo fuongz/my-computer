@@ -1,0 +1,604 @@
+/*
+ * The popup's stylesheet: the palette, and the handful of things a utility
+ * class cannot state.
+ *
+ * Everything else lives as Tailwind utilities on the elements themselves, in
+ * index.ts and in each tool's panel. The semantic class names that remain
+ * (.t1-card, .tool-name, …) carry no styles at all — they are the DOM contract
+ * between the shell and a tool's renderer, and what scripts/preview-popup.ts
+ * asserts against.
+ *
+ * The one exception is .btn and its parts, further down: the button face is a
+ * gradient plus six shadows, and a recipe that long stops being readable —
+ * and stops being one thing — once it is spelled out as arbitrary utilities on
+ * every element that needs it.
+ *
+ * Tailwind finds classes by scanning source text, so a name built by
+ * concatenation produces no CSS. Conditionals pick between whole literal
+ * strings; see `side()` in the T1 panel for the shape.
+ */
+
+/*
+ * `source(none)` turns off Tailwind's automatic project scan and leaves these
+ * two directories as the only inputs. Without it the scan reaches .agents/ and
+ * compiles class names out of the review notes — dead CSS that changes whenever
+ * someone writes documentation.
+ */
+@import "tailwindcss" source(none);
+
+/*
+ * All of src/, not a list of directories. The list version silently dropped
+ * src/common the day the shared components moved there: the classes stopped
+ * being scanned, so `has-[:checked]:bg-surface` compiled to nothing and the
+ * segmented control lost its selected state while still carrying the class.
+ */
+@source "../";
+
+/*
+ * Colours are plain custom properties first and Tailwind colours second.
+ * `inline` is what makes `bg-surface` compile to `var(--color-surface)` rather
+ * than a baked hex — which is what lets one set of utilities follow the theme
+ * without a `dark:` variant on every element in the popup.
+ */
+@theme inline {
+	--color-bg: var(--bg);
+	--color-surface: var(--surface);
+	--color-surface-hover: var(--surface-hover);
+	--color-sunken: var(--sunken);
+	--color-border: var(--border);
+	--color-text: var(--text);
+	--color-muted: var(--muted);
+	--color-accent: var(--accent);
+	--color-accent-soft: var(--accent-soft);
+	--color-on-accent: var(--on-accent);
+	--color-win: var(--win);
+	--color-loss: var(--loss);
+	--color-live: var(--live);
+	--color-warn: var(--warn);
+	--color-track: var(--track);
+	--color-thumb: var(--thumb);
+	--color-logo: var(--logo-bg);
+
+	--font-sans:
+		"Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+	/*
+	 * One radius scale, replacing eleven ad-hoc values that had spread across
+	 * four files. sm sits inside a row, md is a control, lg is a card or row,
+	 * xl is a container.
+	 */
+	--radius-sm: 8px;
+	--radius-md: 12px;
+	--radius-lg: 16px;
+	--radius-xl: 22px;
+
+	/*
+	 * Elevation, not outline. `shadow-rest` is what a card sits at and
+	 * `shadow-raised` is what it lifts to; both resolve per theme, and in dark
+	 * both carry --edge, the inner top highlight that gives a dark card an edge
+	 * at all against a dark page.
+	 */
+	--shadow-rest: var(--elev-1);
+	--shadow-raised: var(--elev-2);
+}
+
+@layer base {
+	/*
+	 * Geist, bundled rather than fetched — a popup has to paint immediately and
+	 * offline, and MV3 rules out remote code anyway. One variable file covers
+	 * every weight the popup uses, including the 650 that no static cut has.
+	 *
+	 * `block` rather than `swap`: the file is a local extension resource, so it
+	 * cannot fail to arrive, and swapping would flash the fallback for a frame
+	 * in a window that only paints once.
+	 */
+	@font-face {
+		font-family: "Geist";
+		src: url("Geist-Variable.woff2") format("woff2-variations");
+		font-weight: 100 900;
+		font-style: normal;
+		font-display: block;
+	}
+
+	/*
+	 * Three states, not two. An explicit choice stamps data-theme on <html>;
+	 * the default "system" stamps nothing and lets prefers-color-scheme decide.
+	 * So light is the bare :root palette, and dark arrives either from the media
+	 * query or from the attribute — no colour is ever defined only inside the
+	 * media query, which would leave the toggle unable to win in both
+	 * directions.
+	 */
+	:root {
+		/*
+		 * The page steps down so a near-white card has something to sit on —
+		 * with the hairlines gone, tone is half of what separates them.
+		 */
+		--bg: #ececee;
+		--surface: #fbfbfc;
+		--surface-hover: #ffffff;
+		--sunken: rgba(9, 11, 16, 0.035);
+		--border: #e4e5ea;
+
+		/* No inner highlight is visible on a near-white card; this is a no-op. */
+		--edge: inset 0 0 0 0 transparent;
+		--elev-1:
+			var(--edge), 0 1px 2px rgba(9, 11, 16, 0.06),
+			0 4px 12px rgba(9, 11, 16, 0.07);
+		--elev-2:
+			var(--edge), 0 2px 6px rgba(9, 11, 16, 0.08),
+			0 14px 30px rgba(9, 11, 16, 0.13);
+		--text: #16181f;
+		--muted: #6b7280;
+		/*
+		 * Monochrome: "accent" is full-strength ink rather than a hue, and the
+		 * contrast comes from muting everything it is competing with. Anything
+		 * drawn on top of it uses --on-accent, which flips with the theme.
+		 */
+		--accent: #0b0d12;
+		--accent-soft: rgba(11, 13, 18, 0.07);
+		--on-accent: #ffffff;
+		--win: #15803d;
+		--loss: #dc2626;
+		--live: #e11d48;
+		--warn: #b45309;
+		--track: #d3d6dd;
+		--thumb: #ffffff;
+		/*
+		 * Esports logos are overwhelmingly white marks drawn for dark UI, so on
+		 * a light card they disappear. They keep a dark chip behind them here,
+		 * and need none in dark mode.
+		 */
+		--logo-bg: #232936;
+
+		/*
+		 * The button family's hue, and the pieces its face is built from.
+		 *
+		 * Deliberately not --accent: surfaces stay ink-and-paper monochrome and
+		 * the violet belongs only to the things you press, so nothing else in
+		 * the popup moves when this changes.
+		 *
+		 * Written with light-dark() instead of being repeated in the two dark
+		 * blocks below. Every one of the three theme blocks already declares
+		 * color-scheme, which is what light-dark() resolves against — so one
+		 * declaration covers both themes and still never leaves a colour
+		 * defined only inside the media query, which is the rule the palette
+		 * above is shaped by.
+		 */
+		--btn: light-dark(#7c3aed, #8b5cf6);
+		/* The violet at text contrast, for the members that are not filled. */
+		--btn-ink: light-dark(#5b21b6, #c4b5fd);
+		--btn-tint: light-dark(rgba(124, 58, 237, 0.1), rgba(139, 92, 246, 0.16));
+		/* The face is lit from above: --lit is the top of the gradient. */
+		--btn-lit: light-dark(#9a6cff, #9f74ff);
+		--btn-deep: light-dark(#6829d4, #6d28d9);
+		--btn-face: #ffffff;
+		/*
+		 * The divider before the caret sits *on* the face, so it is relative to
+		 * that rather than to the page, and does not flip with the theme.
+		 */
+		--btn-rule: rgba(255, 255, 255, 0.26);
+
+		/*
+		 * The four colours the elevation below is composed from: the lit top
+		 * edge, the rim, the face curving away at the bottom, and the contact
+		 * shadow. Only the last two owe anything to the page behind them.
+		 */
+		--btn-sheen: rgba(255, 255, 255, 0.45);
+		--btn-rim: rgba(255, 255, 255, 0.14);
+		--btn-underside: light-dark(rgba(24, 6, 64, 0.26), rgba(0, 0, 0, 0.34));
+		--btn-contact: light-dark(rgba(24, 6, 64, 0.3), rgba(0, 0, 0, 0.5));
+		--btn-glow: light-dark(rgba(88, 28, 205, 0.42), rgba(109, 40, 217, 0.6));
+		--btn-ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+		color-scheme: light;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:root:not([data-theme="light"]) {
+			--bg: #0b0c0f;
+			--surface: #17181d;
+			--surface-hover: #202229;
+			--sunken: rgba(0, 0, 0, 0.25);
+			--border: #262a33;
+
+			--edge: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+			--elev-1:
+				var(--edge), 0 1px 2px rgba(0, 0, 0, 0.5),
+				0 6px 16px rgba(0, 0, 0, 0.45);
+			--elev-2:
+				inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 2px 6px rgba(0, 0, 0, 0.55),
+				0 14px 30px rgba(0, 0, 0, 0.5);
+			--text: #e8eaf0;
+			--muted: #8b91a3;
+			--accent: #ffffff;
+			--accent-soft: rgba(255, 255, 255, 0.1);
+			--on-accent: #0d0f13;
+			--win: #4ade80;
+			--loss: #f87171;
+			--live: #ff4d4f;
+			--warn: #fbbf24;
+			--track: #2f3441;
+			--thumb: #a4a9b4;
+			--logo-bg: transparent;
+
+			color-scheme: dark;
+		}
+	}
+
+	:root[data-theme="dark"] {
+		--bg: #0b0c0f;
+		--surface: #17181d;
+		--surface-hover: #202229;
+		--sunken: rgba(0, 0, 0, 0.25);
+		--border: #262a33;
+
+		--edge: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		--elev-1:
+			var(--edge), 0 1px 2px rgba(0, 0, 0, 0.5),
+			0 6px 16px rgba(0, 0, 0, 0.45);
+		--elev-2:
+			inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 2px 6px rgba(0, 0, 0, 0.55),
+			0 14px 30px rgba(0, 0, 0, 0.5);
+		--text: #e8eaf0;
+		--muted: #8b91a3;
+		--accent: #ffffff;
+		--accent-soft: rgba(255, 255, 255, 0.1);
+		--on-accent: #0d0f13;
+		--win: #4ade80;
+		--loss: #f87171;
+		--live: #ff4d4f;
+		--warn: #fbbf24;
+		--track: #2f3441;
+		--thumb: #a4a9b4;
+		--logo-bg: transparent;
+
+		color-scheme: dark;
+	}
+
+	button,
+	input {
+		font: inherit;
+		color: inherit;
+	}
+
+	/*
+	 * The UA's `[hidden] { display: none }` and a Tailwind display utility have
+	 * the same specificity, so on any element that gets both, the utility wins
+	 * on source order and the element stays on screen. The views toggle through
+	 * the attribute, so make it win outright.
+	 */
+	[hidden] {
+		display: none !important;
+	}
+
+	/*
+	 * Windows high-contrast drops box-shadow entirely, which would leave every
+	 * card in this design with no edge at all. The transparent border each one
+	 * carries costs nothing normally and becomes a real one there.
+	 */
+	@media (forced-colors: active) {
+		.shadow-rest,
+		.shadow-raised {
+			border-color: CanvasText;
+		}
+	}
+
+	/*
+	 * At 780px the scroll region's bar is wide enough to notice, and Chrome's
+	 * default one ignores the palette entirely.
+	 */
+	::-webkit-scrollbar {
+		width: 10px;
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: var(--border);
+		border: 3px solid var(--bg);
+		border-radius: 9999px;
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		background: var(--muted);
+	}
+
+	::-webkit-scrollbar-track {
+		background: transparent;
+	}
+}
+
+/*
+ * The button
+ * ==========
+ *
+ * One shape, from the supplied reference. What makes it read as a key you can
+ * press rather than a coloured rectangle is four things happening at once:
+ *
+ *   1. the face is lit from above — a vertical gradient, --lit to --deep;
+ *   2. a bright hairline along the top edge and a dark one along the bottom,
+ *      both inset, so the face looks like it curves away at the bottom;
+ *   3. the shadow under it is *lime*, not grey — a bloom the button is
+ *      sitting in rather than a drop shadow;
+ *   4. the icon sits directly on the face in the label's own colour, so the
+ *      button stays one object rather than a control inside a control.
+ *
+ * Pressing moves it 1px down and pulls the bloom in tight, which is the whole
+ * illusion: the button gets nearer the surface.
+ *
+ * A variant only ever sets --lit, --deep and --glow. Everything else is
+ * inherited, so the family stays one object with four faces.
+ */
+@layer components {
+	.btn {
+		--lit: var(--btn-lit);
+		--deep: var(--btn-deep);
+		--glow: var(--btn-glow);
+		--rule: var(--btn-rule);
+
+		display: inline-flex;
+		box-sizing: border-box;
+		align-items: center;
+		justify-content: center;
+		gap: 9px;
+		min-height: 38px;
+		padding: 0 16px;
+		/*
+		 * Transparent rather than absent: Windows high-contrast drops
+		 * box-shadow and background-image both, which would leave the button
+		 * with no edge at all. See the forced-colors rule below.
+		 */
+		border: 1px solid transparent;
+		border-radius: 13px;
+		background-color: var(--deep);
+		background-image: linear-gradient(180deg, var(--lit) 0%, var(--deep) 100%);
+		box-shadow:
+			inset 0 1px 0 var(--btn-sheen), inset 0 0 0 1px var(--btn-rim),
+			inset 0 -3px 6px var(--btn-underside), 0 1px 1.5px var(--btn-contact),
+			0 7px 16px -5px var(--glow), 0 16px 32px -14px var(--glow);
+		color: var(--btn-face);
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		/* The download control in the dialog is an <a> wearing .btn. */
+		text-decoration: none;
+		cursor: pointer;
+		user-select: none;
+		transition:
+			transform 0.14s var(--btn-ease), box-shadow 0.22s var(--btn-ease),
+			filter 0.16s var(--btn-ease), background-color 0.16s var(--btn-ease);
+	}
+
+	/*
+	 * Brightness rather than a second gradient: it lifts the face and the icon
+	 * on it together, which is what a light coming up does.
+	 */
+	.btn:hover:not(:disabled) {
+		filter: brightness(1.07) saturate(1.03);
+	}
+
+	.btn:active:not(:disabled) {
+		transform: translateY(1px);
+		box-shadow:
+			inset 0 1px 0 var(--btn-rim), inset 0 0 0 1px var(--btn-rim),
+			inset 0 -1px 3px var(--btn-underside), 0 1px 1px var(--btn-contact),
+			0 3px 8px -4px var(--glow);
+	}
+
+	.btn:focus-visible {
+		outline: 2px solid var(--btn);
+		outline-offset: 2px;
+	}
+
+	.btn:disabled,
+	.btn[aria-disabled="true"] {
+		transform: none;
+		box-shadow: inset 0 1px 0 var(--btn-rim);
+		filter: none;
+		opacity: 0.45;
+		cursor: default;
+	}
+
+	/* --- the parts ----------------------------------------------------- */
+
+	/*
+	 * The icon sits on the face in the label's own colour. It had a light plate
+	 * under it to begin with, following the reference; at this size the plate
+	 * was the loudest thing on the button and read as a second control inside
+	 * the first.
+	 */
+	.btn svg {
+		flex: none;
+		width: 15px;
+		height: 15px;
+	}
+
+	/*
+	 * The divided trailing section. It stretches instead of being centred so
+	 * the rule runs the full height of the face, edge to edge, and eats the
+	 * button's right padding so it ends where the face does.
+	 */
+	.btn-caret {
+		display: grid;
+		align-self: stretch;
+		place-items: center;
+		margin-right: -16px;
+		margin-left: 5px;
+		padding: 0 13px;
+		border-left: 1px solid var(--rule);
+		opacity: 0.92;
+	}
+
+	/* --- the faces ----------------------------------------------------- */
+
+	/* Named for the DOM's sake: primary is what .btn already draws. */
+	.btn-primary {
+		--lit: var(--btn-lit);
+		--deep: var(--btn-deep);
+		--glow: var(--btn-glow);
+	}
+
+	/*
+	 * Red is one of the few things in this palette that still means something,
+	 * and a destructive action is exactly what it means. Same recipe, one hue
+	 * across.
+	 */
+	.btn-danger {
+		--lit: #f8737f;
+		--deep: #c81d2b;
+		--glow: light-dark(rgba(180, 20, 34, 0.4), rgba(190, 24, 40, 0.55));
+	}
+
+	/*
+	 * Paper, lit the same way. The sheen and the underside both have to change
+	 * sign here — a white highlight on a near-white face is invisible, and the
+	 * shadow under it is the page's grey rather than the lime bloom.
+	 */
+	.btn-secondary {
+		--lit: var(--surface-hover);
+		--deep: var(--surface);
+		--rule: var(--border);
+		box-shadow:
+			inset 0 1px 0 light-dark(#ffffff, rgba(255, 255, 255, 0.08)),
+			inset 0 0 0 1px light-dark(rgba(9, 11, 16, 0.08), rgba(255, 255, 255, 0.07)),
+			inset 0 -2px 5px light-dark(rgba(9, 11, 16, 0.05), rgba(0, 0, 0, 0.3)),
+			0 1px 2px light-dark(rgba(9, 11, 16, 0.09), rgba(0, 0, 0, 0.45)),
+			0 8px 18px -8px light-dark(rgba(9, 11, 16, 0.2), rgba(0, 0, 0, 0.6));
+		color: var(--text);
+	}
+
+	/* The same object with the fill taken out: a flat lime tint, lime ink. */
+	.btn-soft {
+		--lit: color-mix(in srgb, var(--btn) 17%, transparent);
+		--deep: color-mix(in srgb, var(--btn) 11%, transparent);
+		--rule: color-mix(in srgb, var(--btn) 26%, transparent);
+		background-color: transparent;
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--btn) 22%, transparent);
+		color: var(--btn-ink);
+	}
+
+	/*
+	 * The quiet member, for the ways back. A filled lime key for "All tools"
+	 * would outrank the thing it returns you to, so this keeps the family's
+	 * geometry, hover tint and focus ring and drops the face — and stays last
+	 * so it wins the background over whichever hue it is combined with.
+	 */
+	.btn-ghost {
+		min-height: 30px;
+		padding: 0 10px;
+		gap: 6px;
+		border-radius: 10px;
+		background-color: transparent;
+		background-image: none;
+		box-shadow: none;
+		color: var(--muted);
+		font-size: 12px;
+		font-weight: 500;
+	}
+
+	.btn-ghost:hover:not(:disabled) {
+		background-color: var(--btn-tint);
+		color: var(--btn-ink);
+		filter: none;
+	}
+
+	.btn-ghost:active:not(:disabled) {
+		box-shadow: none;
+	}
+
+	.btn-ghost.btn-danger {
+		color: var(--loss);
+	}
+
+	.btn-ghost.btn-danger:hover:not(:disabled) {
+		background-color: color-mix(in srgb, var(--loss) 12%, transparent);
+		color: var(--loss);
+	}
+
+	/* --- shapes -------------------------------------------------------- */
+
+	/* Icon only: square rather than round, to stay in the family's geometry. */
+	.btn-icon {
+		width: 34px;
+		min-height: 34px;
+		padding: 0;
+		gap: 0;
+		border-radius: 11px;
+	}
+
+	.btn-block {
+		width: 100%;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.btn {
+			transition-duration: 0.01ms;
+		}
+
+		.btn:active:not(:disabled) {
+			transform: none;
+		}
+	}
+
+	/*
+	 * Forced colours keeps only the border and the system palette, so the
+	 * variants become indistinguishable — which is the point of that mode. The
+	 * transparent border each button carries becomes the real one.
+	 */
+	@media (forced-colors: active) {
+		.btn {
+			border-color: ButtonText;
+		}
+	}
+}
+
+@layer components {
+	/*
+	 * The dashboard is a collection, rather than the drill-down menus that use
+	 * this same primitive. Separate cards make the wider popup useful and keep
+	 * each tool easy to scan; tool panels retain the regular divided menu.
+	 */
+	.tool-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 12px;
+		overflow: visible;
+		background: transparent;
+		box-shadow: none;
+	}
+
+	.tool-grid .menu-row {
+		min-width: 0;
+		border: 1px solid transparent;
+		border-radius: var(--radius-lg);
+		background: var(--surface);
+		box-shadow: var(--elev-1);
+	}
+
+	.tool-grid .menu-row:not(:first-child) {
+		border-top-color: transparent;
+	}
+
+	@media (max-width: 560px) {
+		.tool-grid {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+}
+
+/*
+ * The bracket's connectors. These are drawn into an SVG by
+ * src/tools/t1-tracker/tournament.ts, which sets the class through
+ * setAttribute — utilities would work, but stroke colour and width belong
+ * next to the geometry they describe.
+ */
+@layer components {
+	.t1-line {
+		fill: none;
+		stroke: var(--border);
+		stroke-width: 1.5;
+	}
+
+	.t1-line-t1 {
+		stroke: var(--accent);
+		stroke-width: 2;
+	}
+}

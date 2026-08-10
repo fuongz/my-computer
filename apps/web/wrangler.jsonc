@@ -1,0 +1,41 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "fuongz-web",
+  "main": "@tanstack/react-start/server-entry",
+  "compatibility_date": "2026-08-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "prod-fuongz-tools",
+			"database_id": "da13b86b-67c3-4544-b3e1-080602fd2251",
+			"migrations_dir": "migrations"
+		}
+	],
+	// The same bucket apps/api writes generated images into. This app reads and deletes
+	// from it directly rather than calling its own public API — it already holds the
+	// user's session, and making it mint itself an API key would be ceremony.
+	"r2_buckets": [
+		{
+			"binding": "OUTPUTS",
+			"bucket_name": "prod-image-analyzed"
+		}
+	],
+	// The allowance ceilings, mirrored from apps/api. apps/api ENFORCES them; this app
+	// only reports them on /usage. They must be kept identical — a page that promises a
+	// ceiling the API does not apply is worse than a page that says nothing.
+	"vars": {
+		"DEFAULT_DAILY_ANALYSES": "5",
+		"DEFAULT_DAILY_IMAGES": "1",
+		"SYSTEM_DAILY_ANALYSES": "200",
+		"SYSTEM_DAILY_IMAGES": "40",
+		// Emails allowed to change other accounts' limits. Not a secret — it is who,
+		// not a credential — and keeping it in config means privilege cannot be granted
+		// by anything the running app does.
+		"ADMIN_EMAILS": ""
+	}
+	// Secrets, set with `wrangler secret put`:
+	//   BETTER_AUTH_SECRET, BETTER_AUTH_URL, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+	//   PROVIDER_ENCRYPTION_KEY — base64 32 bytes, shared with apps/api.
+}

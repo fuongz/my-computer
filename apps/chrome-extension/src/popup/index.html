@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>fuongz's Extensions</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body class="w-[780px] bg-bg font-sans text-sm text-text">
+        <!--
+    Two views in one document: the dashboard, and one tool's detail view. Both
+    are rendered from the registry by popup.js — nothing about any individual
+    tool is hard-coded here.
+
+    Styling is Tailwind utilities; the bare class names (.app-bar, .view, …)
+    are hooks for popup.js and for scripts/preview-popup.ts, not selectors.
+  -->
+        <div class="app">
+            <header
+                class="app-bar flex items-center gap-2.5 border-b border-border px-4 py-3.5"
+            >
+                <div class="brand-text min-w-0 flex-1">
+                    <h1 class="text-sm font-[650] tracking-tight">
+                        fuongz's Extensions
+                    </h1>
+                    <p id="summary" class="brand-sub text-[11px] text-muted">
+                        Loading…
+                    </p>
+                </div>
+
+                <!--
+          Mount points only. The components that go in here bring their own
+          surface, padding and ARIA — anything styled here would wrap them in a
+          second one.
+        -->
+                <div id="appearance" class="flex-none"></div>
+                <button id="settings" type="button" class="btn btn-primary btn-icon" aria-label="Open settings" title="Settings"></button>
+            </header>
+
+            <section
+                id="view-dashboard"
+                class="view max-h-[530px] overflow-y-auto p-3"
+                aria-label="Tools"
+            >
+                <div id="tool-list"></div>
+                <p
+                    id="empty-state"
+                    class="placeholder rounded-lg border border-dashed border-border px-4 py-7 text-center text-xs leading-relaxed text-muted"
+                    hidden
+                >
+                    No tools are registered yet.
+                </p>
+                <p
+                    id="more-soon"
+                    class="footnote mt-2.5 text-center text-[11px] text-muted"
+                >
+                    More tools show up here as they ship.
+                </p>
+            </section>
+
+            <section
+                id="view-detail"
+                class="view max-h-[530px] overflow-y-auto p-3"
+                aria-label="Tool settings"
+                hidden
+            >
+                <!-- The way back on the left, the tool's own switch on the right. -->
+                <div class="mb-3 flex items-center justify-between gap-3">
+                    <!--
+              The quiet member of the button family: a filled lime key here
+              would outrank the view it returns you to.
+            -->
+                    <button id="back" type="button" class="back btn btn-ghost">
+                        All tools
+                    </button>
+                    <div id="detail-switch" class="flex-none"></div>
+                </div>
+                <div id="detail-body"></div>
+            </section>
+        </div>
+
+        <script type="module" src="popup.js"></script>
+    </body>
+</html>

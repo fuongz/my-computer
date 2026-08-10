@@ -1,0 +1,28 @@
+{
+	"name": "fuongz-monorepo",
+	"type": "module",
+	"private": true,
+	"version": "1.0.0",
+	"workspaces": ["apps/*", "packages/*"],
+	"scripts": {
+		"build": "bun run --filter '*' build",
+		"dev": "bun run --cwd apps/web dev",
+		"dev:api": "bun run --cwd apps/api dev",
+		"dev:extension": "bun run --filter @fuongz/chrome-extension dev",
+		"typecheck": "bun run --filter '*' typecheck",
+		"lint": "biome lint && node scripts/audit-layout.mjs",
+		"format": "biome format --write",
+		"check": "biome check",
+		"gate": "bun run build && bun run lint && bun run typecheck",
+		"icons": "bun run --filter @fuongz/chrome-extension icons",
+		"preview": "bun run --filter @fuongz/chrome-extension preview",
+		"preview:popup": "bun run --filter @fuongz/chrome-extension preview:popup",
+		"test:connection": "bun run --filter @fuongz/chrome-extension test:connection",
+		"test:prompt-flow": "bun run --filter @fuongz/chrome-extension test:prompt-flow",
+		"test:api": "bun run --filter @fuongz/api test"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.3",
+		"typescript": "^6.0.3"
+	}
+}

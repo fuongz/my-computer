@@ -1,0 +1,46 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "fuongz-api",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-08-08",
+	"compatibility_flags": ["nodejs_compat"],
+	"observability": { "enabled": true },
+	// The SAME database as apps/web. Keys are minted there and verified here, so a
+	// second database would mean a key that exists on one side and not the other.
+	// apps/web owns `migrations/`; this Worker declares no migrations_dir.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "prod-fuongz-tools",
+			"database_id": "da13b86b-67c3-4544-b3e1-080602fd2251"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "OUTPUTS",
+			"bucket_name": "prod-image-analyzed"
+		}
+	],
+	"vars": {
+		// Free daily allowance on the deployment's own provider keys, per user.
+		"DEFAULT_DAILY_ANALYSES": "5",
+		"DEFAULT_DAILY_IMAGES": "1",
+		// The circuit breaker: the same counters for the whole deployment. Sign-up is
+		// open, so these bound the worst possible day regardless of how many accounts
+		// appear. BYOK traffic is unaffected when they are spent.
+		"SYSTEM_DAILY_ANALYSES": "200",
+		"SYSTEM_DAILY_IMAGES": "40",
+		// Comma-separated CORS allowlist. Empty means no cross-origin browser caller is
+		// permitted — the extension's service worker needs no CORS, it has host access.
+		"ALLOWED_ORIGINS": "",
+		// Emails allowed to change other accounts' limits. Not a secret — it is who,
+		// not a credential — and keeping it in config means privilege cannot be granted
+		// by anything the running app does.
+		"ADMIN_EMAILS": ""
+	}
+	// Secrets, set with `wrangler secret put` and never in this file:
+	//   BETTER_AUTH_URL, BETTER_AUTH_SECRET  — must match apps/web exactly.
+	//   PROVIDER_ENCRYPTION_KEY              — base64 32 bytes, shared with apps/web.
+	//   SYSTEM_OPENROUTER_API_KEY            — pays for Default-mode analyses.
+	//   SYSTEM_REPLICATE_API_TOKEN           — pays for Default-mode images.
+}

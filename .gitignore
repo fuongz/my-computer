@@ -1,0 +1,31 @@
+# dependencies (bun install)
+node_modules
+
+# build output
+apps/chrome-extension/extension/dist
+apps/*/dist
+out
+*.tgz
+
+# framework caches / generated output
+.tanstack
+.output
+.vite
+
+# caches
+.cache
+*.tsbuildinfo
+
+# IntelliJ based IDEs
+.idea
+
+# Finder (MacOS) folder config
+.DS_Store
+
+.smoke
+.preview
+
+.env
+.dev.vars
+
+.wrangler

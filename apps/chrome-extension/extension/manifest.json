@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "fuongz's Extensions",
+  "version": "1.0.0",
+  "description": "A small toolbox of browser tweaks, each switched on or off from one dashboard.",
+  "permissions": ["storage", "contextMenus", "scripting"],
+  "host_permissions": [
+    "https://*.pinterest.com/*",
+    "https://esports-api.lolesports.com/*",
+    "https://static.lolesports.com/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "css": ["dist/tools/pinterest-theme.css"],
+      "js": ["dist/tools/pinterest-theme.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_popup": "dist/popup/index.html",
+    "default_title": "fuongz's Extensions",
+    "default_icon": {
+      "16": "assets/icons/icon-16.png",
+      "48": "assets/icons/icon-48.png",
+      "128": "assets/icons/icon-128.png"
+    }
+  },
+  "options_page": "dist/options/index.html",
+  "background": { "service_worker": "dist/background/service-worker.js", "type": "module" }
+}

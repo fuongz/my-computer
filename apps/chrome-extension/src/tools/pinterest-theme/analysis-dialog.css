@@ -1,0 +1,1321 @@
+/*
+ * "How was this made?" — the dialog
+ * =================================
+ *
+ * Concatenated onto theme.css at build time (see build:tools:assets), because
+ * the manifest declares exactly one stylesheet for the content bundle. It is
+ * kept as its own source file because it is NOT part of the Pinterest theme:
+ * theme.css is inert without html[data-pinterest-dark], this runs everywhere.
+ *
+ * THE ONE IDEA
+ *
+ * There is a single card, built once, that morphs between five states rather
+ * than five cards that replace each other. So everything here is written to
+ * survive a state change: the image frame changes size but is never re-created,
+ * and the scan overlay is a sibling that fades in over it rather than a
+ * different screen.
+ *
+ * State lives in one attribute, #fz-prompt-overlay[data-state], the same way
+ * the theme lives in one attribute on <html>. Read the selectors below as
+ * "what is true in this state", not as a sequence.
+ *
+ * MOTION
+ *
+ * --fz-spring is written onto the overlay by analysis-dialog.ts as a CSS
+ * linear() easing sampled from a real spring, so CSS transitions and the
+ * WAAPI morphs share one definition. The literal below is only the fallback
+ * for the frame before that lands.
+ *
+ * Everything that loops (the scan) is compositor-only — transform and opacity.
+ * The two things that cannot be (card height, image frame) are driven from JS
+ * as one-shot FLIPs, not as looping work.
+ */
+
+/* ------------------------------------------------------------------ *
+ * 1. Tokens
+ *
+ * Light is the default and dark is applied by two triggers, because the
+ * dialog outlives its origin story: prefers-color-scheme for the whole web,
+ * and the Pinterest attribute for when our own theme has forced dark on a
+ * page the OS still calls light.
+ * ------------------------------------------------------------------ */
+
+/* It is only focusable so opening can land here; it is not a control. */
+#fz-prompt-overlay:focus {
+	outline: none;
+}
+
+#fz-prompt-overlay {
+	--fz-spring: cubic-bezier(0.32, 0.72, 0, 1);
+	--fz-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+	--fz-glass: rgba(255, 255, 255, 0.5);
+	--fz-glass-edge: rgba(255, 255, 255, 0.72);
+	--fz-sheen: rgba(255, 255, 255, 0.9);
+	--fz-inset: rgba(255, 255, 255, 0.85);
+	--fz-shadow: 0 28px 68px -14px rgba(9, 12, 20, 0.3), 0 3px 10px rgba(9, 12, 20, 0.08);
+
+	--fz-text: #14161d;
+	--fz-muted: #656d7b;
+	--fz-faint: rgba(11, 14, 22, 0.055);
+	--fz-hairline: rgba(11, 14, 22, 0.09);
+
+	--fz-accent: #14161d;
+	--fz-on-accent: #ffffff;
+
+	/*
+	 * The button's violet, and the pieces its face is built from — the same
+	 * recipe as .btn in the popup's stylesheet, restated because a content
+	 * script and an extension page share no CSS.
+	 *
+	 * These are not in the theme blocks below and do not flip: the button is a
+	 * key sitting on the card, and every part of it — the lit top edge, the
+	 * bloom underneath — is relative to its own face rather than to whatever
+	 * page the dialog opened over.
+	 */
+	--fz-btn-lit: #9a6cff;
+	--fz-btn-deep: #6829d4;
+	--fz-btn-sheen: rgba(255, 255, 255, 0.45);
+	--fz-btn-rim: rgba(255, 255, 255, 0.14);
+	--fz-btn-underside: rgba(24, 6, 64, 0.26);
+	--fz-btn-contact: rgba(24, 6, 64, 0.32);
+	--fz-btn-glow: rgba(88, 28, 205, 0.45);
+	--fz-btn-rule: rgba(255, 255, 255, 0.26);
+
+	/* Set from the image's natural size, so the hero never letterboxes. */
+	--fz-aspect: 4 / 3;
+	/*
+	 * How tall the hero frame may get. One declaration, because the width above
+	 * is derived from it — the two drifting apart is exactly what puts grey
+	 * bars back down the sides.
+	 */
+	--fz-hero-cap: 72vh;
+
+	position: fixed;
+	top: 76px;
+	right: 24px;
+	z-index: 2147483647;
+	/*
+	 * The dialog is as wide as its picture needs, not a fixed column.
+	 *
+	 * A 9:16 image in a 452px card could only obey `contain` by letterboxing —
+	 * dead grey down each side, which reads as the dialog being broken rather
+	 * than as the image being tall. So the width is derived: the widest a frame
+	 * of this aspect can be while its height still fits the cap. --fz-aspect
+	 * substitutes as `w / h`, which makes the calc read `cap * w / h` — the
+	 * width of a cap-tall box with that ratio, exactly.
+	 *
+	 * No floor. One was tried, and 10px of it was enough to put the grey bars
+	 * back: the frame kept the floor's width while its height stopped at the
+	 * cap, so the ratio no longer matched the picture and `contain` filled the
+	 * difference. The width has to be *exactly* the aspect or it is not a fit.
+	 *
+	 * Landscape pictures never reach the cap, so for them the 452px still wins
+	 * and nothing about them changed.
+	 */
+	width: min(
+		calc(var(--fz-hero-cap) * var(--fz-aspect) + 10px),
+		452px,
+		calc(100vw - 32px)
+	);
+	/* Only fires if the natural size arrives after the first paint — a cached
+	   image is measured before it, and then there is nothing to animate. */
+	transition: width 0.45s var(--fz-spring);
+	font: 14px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+		sans-serif;
+	color: var(--fz-text);
+}
+
+@media (prefers-color-scheme: dark) {
+	#fz-prompt-overlay {
+		--fz-glass: rgba(24, 27, 35, 0.46);
+		--fz-glass-edge: rgba(255, 255, 255, 0.14);
+		--fz-sheen: rgba(255, 255, 255, 0.16);
+		--fz-inset: rgba(255, 255, 255, 0.1);
+		--fz-shadow: 0 28px 68px -14px rgba(0, 0, 0, 0.66), 0 3px 10px rgba(0, 0, 0, 0.4);
+
+		--fz-text: #f3f5f9;
+		--fz-muted: #a2abba;
+		--fz-faint: rgba(255, 255, 255, 0.06);
+		--fz-hairline: rgba(255, 255, 255, 0.1);
+
+		--fz-accent: #f3f5f9;
+		--fz-on-accent: #14161d;
+	}
+}
+
+html[data-pinterest-dark="on"] #fz-prompt-overlay {
+	--fz-glass: rgba(24, 27, 35, 0.46);
+	--fz-glass-edge: rgba(255, 255, 255, 0.14);
+	--fz-sheen: rgba(255, 255, 255, 0.16);
+	--fz-inset: rgba(255, 255, 255, 0.1);
+	--fz-shadow: 0 28px 68px -14px rgba(0, 0, 0, 0.66), 0 3px 10px rgba(0, 0, 0, 0.4);
+
+	--fz-text: #f3f5f9;
+	--fz-muted: #a2abba;
+	--fz-faint: rgba(255, 255, 255, 0.06);
+	--fz-hairline: rgba(255, 255, 255, 0.1);
+
+	--fz-accent: #f3f5f9;
+	--fz-on-accent: #14161d;
+}
+
+/* ------------------------------------------------------------------ *
+ * 2. The glass card
+ *
+ * Three layers make it read as glass rather than as a translucent box:
+ * the backdrop blur (refraction), an inset top highlight (the lit edge), and
+ * ::before, a broad specular sweep across the top-left. ::after draws the
+ * hairline rim on top of everything so it survives the blur.
+ * ------------------------------------------------------------------ */
+
+.fz-card {
+	position: relative;
+	box-sizing: border-box;
+	max-height: calc(100vh - 100px);
+	overflow: hidden auto;
+	/*
+	 * Barely there. The picture is the dialog now — the controls and the prompt
+	 * both sit inside it — so the card's job shrank to a rim that says where the
+	 * dialog ends and holds the corners round.
+	 */
+	padding: 5px;
+	border-radius: 22px;
+	background: var(--fz-glass);
+	-webkit-backdrop-filter: blur(32px) saturate(180%);
+	backdrop-filter: blur(32px) saturate(180%);
+	box-shadow: var(--fz-shadow), inset 0 1px 0 var(--fz-inset);
+	transform-origin: 100% 0;
+}
+
+/* Held while a height morph is in flight — a scrollbar appearing mid-animation
+   changes the content width and makes the text reflow under the motion. */
+.fz-card[data-morphing="1"] {
+	overflow: hidden;
+}
+
+.fz-card::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: radial-gradient(
+		120% 80% at 8% -10%,
+		var(--fz-sheen) 0%,
+		transparent 58%
+	);
+	opacity: 0.7;
+	pointer-events: none;
+}
+
+.fz-card::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	border: 1px solid var(--fz-glass-edge);
+	pointer-events: none;
+}
+
+.fz-card > * {
+	position: relative;
+	z-index: 1;
+}
+
+/* A dedicated handle keeps all content (including scrollable text) usable. */
+.fz-drag-handle {
+	position: absolute;
+	top: 8px;
+	left: 50%;
+	z-index: 2;
+	/*
+	 * An iOS grabber: a thin pill that answers the pointer instead of sitting
+	 * still. It widens and firms up on hover, and again while it is actually
+	 * being dragged, all on --fz-spring — the same sampled spring the card's
+	 * morphs use, which is what makes the response read as physical rather than
+	 * as a hover colour change.
+	 */
+	width: 40px;
+	height: 5px;
+	border-radius: 999px;
+	/*
+	 * Pinned light with a shadow, because the rim it used to sit on is gone:
+	 * it now lies on the top of the photograph, where a tinted hairline is
+	 * invisible over anything pale.
+	 */
+	background: rgba(255, 255, 255, 0.62);
+	box-shadow: 0 1px 3px rgba(9, 12, 20, 0.35);
+	/* With left: 50%, this is what keeps it centred as it widens. */
+	transform: translateX(-50%);
+	cursor: grab;
+	touch-action: none;
+	transition: width 0.34s var(--fz-spring), height 0.34s var(--fz-spring),
+		background-color 0.2s var(--fz-ease);
+}
+
+/*
+ * The grip is now the only way to move the dialog, and a 5px-tall pill is not
+ * something you aim at. This widens what the pointer can grab to about 30x76
+ * without changing what is drawn — the same trick a native grabber uses.
+ */
+.fz-drag-handle::before {
+	content: "";
+	position: absolute;
+	inset: -12px -18px;
+}
+
+.fz-drag-handle:hover {
+	width: 52px;
+	height: 6px;
+	background: rgba(255, 255, 255, 0.92);
+}
+
+/*
+ * Held while the dialog is actually moving. It stays stretched for the whole
+ * drag rather than only on the press, so the handle is the one thing that still
+ * looks solid while the card itself fades back.
+ */
+#fz-prompt-overlay[data-dragging="1"] .fz-drag-handle {
+	width: 62px;
+	height: 6px;
+	background: #ffffff;
+}
+
+#fz-prompt-overlay[data-dragging="1"] {
+	opacity: 0.72;
+	user-select: none;
+	will-change: translate, opacity;
+}
+
+#fz-prompt-overlay[data-dragging="1"] .fz-drag-handle {
+	cursor: grabbing;
+}
+
+/* ------------------------------------------------------------------ *
+ * 3. Minimize and its orb
+ * ------------------------------------------------------------------ */
+
+.fz-minimize,
+.fz-orb-close {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 3;
+	display: grid;
+	width: 28px;
+	height: 28px;
+	place-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	/*
+	 * Glass rather than a flat tint, because in the hero states this button
+	 * sits *on the picture*. A translucent wash over an unknown photograph is
+	 * a coin flip; its own blurred material reads over any of them.
+	 */
+	background: var(--fz-glass);
+	-webkit-backdrop-filter: blur(14px) saturate(180%);
+	backdrop-filter: blur(14px) saturate(180%);
+	border: 1px solid var(--fz-glass-edge);
+	color: var(--fz-text);
+	cursor: pointer;
+	transition: background 0.18s var(--fz-ease), color 0.18s var(--fz-ease),
+		transform 0.18s var(--fz-ease);
+}
+
+.fz-minimize:hover,
+.fz-orb-close:hover {
+	background: var(--fz-hairline);
+	color: var(--fz-text);
+}
+
+.fz-minimize:active,
+.fz-orb-close:active {
+	transform: scale(0.92);
+}
+
+.fz-minimize svg,
+.fz-orb-close svg {
+	width: 13px;
+	height: 13px;
+}
+
+.fz-orb,
+.fz-orb-close {
+	display: none;
+}
+
+#fz-prompt-overlay[data-minimized="1"] {
+	width: 56px;
+	height: 56px;
+	min-height: 56px;
+	transition: width 0.34s var(--fz-spring), height 0.34s var(--fz-spring);
+}
+
+#fz-prompt-overlay[data-minimized="1"] .fz-card {
+	pointer-events: none;
+	opacity: 0;
+	transform: scale(0.42);
+	transition: opacity 0.18s var(--fz-ease), transform 0.34s var(--fz-spring);
+}
+
+#fz-prompt-overlay[data-minimized="1"] .fz-orb {
+	position: absolute;
+	inset: 0;
+	z-index: 4;
+	display: grid;
+	place-items: center;
+	padding: 0;
+	border: 1px solid rgba(255, 255, 255, 0.48);
+	border-radius: 50%;
+	background: linear-gradient(145deg, #b794ff 0%, #6f28e8 54%, #3d0c9b 100%);
+	box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.52), 0 10px 24px -6px var(--fz-btn-glow);
+	color: #fff;
+	cursor: grab;
+	transform: scale(0.6);
+	opacity: 0;
+	transition: opacity 0.16s var(--fz-ease), transform 0.34s var(--fz-spring);
+}
+
+#fz-prompt-overlay[data-minimized="1"] .fz-orb svg {
+	width: 23px;
+	height: 23px;
+}
+
+#fz-prompt-overlay[data-minimized="1"] .fz-orb-close {
+	position: absolute;
+	top: -5px;
+	right: -5px;
+	z-index: 5;
+	display: grid;
+	width: 22px;
+	height: 22px;
+	place-items: center;
+	padding: 0;
+	border-radius: 50%;
+	opacity: 0;
+	pointer-events: none;
+	transform: scale(0.7);
+	transition: opacity 0.16s var(--fz-ease), transform 0.2s var(--fz-spring);
+}
+
+#fz-prompt-overlay[data-minimized="1"] .fz-orb,
+#fz-prompt-overlay[data-minimized="1"] .fz-orb-close {
+	opacity: 1;
+	transform: none;
+}
+
+#fz-prompt-overlay[data-minimized="1"]:hover .fz-orb-close,
+#fz-prompt-overlay[data-minimized="1"]:focus-within .fz-orb-close {
+	pointer-events: auto;
+}
+
+#fz-prompt-overlay[data-minimized="1"]:hover .fz-orb-close,
+#fz-prompt-overlay[data-minimized="1"]:focus-within .fz-orb-close {
+	opacity: 1;
+	transform: none;
+}
+
+#fz-prompt-overlay[data-minimized="1"][data-dragging="1"] .fz-orb {
+	cursor: grabbing;
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. Hero — the image frame and the title
+ *
+ * The source image is big only while it is the subject: it grows for the scan,
+ * stays big while the prompt it produced is on screen, then shrinks back to a
+ * thumbnail once a *generated* image becomes the thing worth looking at. So
+ * the size is keyed to `data-hero`, not to `data-state` — three of the five
+ * states want the small frame and reading them off one attribute keeps the two
+ * FLIP directions symmetrical.
+ *
+ * Note these rules name .fz-stage-source. The generated tile is a .fz-stage
+ * too — same frame, same scan — and must not inherit the hero's dimensions.
+ * ------------------------------------------------------------------ */
+
+.fz-stage {
+	position: relative;
+	overflow: hidden;
+	background: var(--fz-faint);
+	transform-origin: 0 0;
+}
+
+#fz-prompt-overlay[data-hero="thumb"] .fz-stage-source {
+	width: 66px;
+	height: 66px;
+	border-radius: 18px;
+}
+
+#fz-prompt-overlay[data-hero="full"] .fz-stage-source {
+	width: 100%;
+	aspect-ratio: var(--fz-aspect);
+	max-height: var(--fz-hero-cap);
+	/*
+	 * The floor is for the other extreme: a panorama's frame would be under
+	 * 200px tall, and the strip on it — prompt, Copy, Generate — is taller than
+	 * that, so it would be clipped by the frame it is inside. Wide pictures
+	 * letterboxing a little top and bottom is the cheaper of the two faults.
+	 */
+	min-height: 240px;
+	border-radius: 17px;
+}
+
+.fz-stage::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	border: 1px solid var(--fz-hairline);
+	pointer-events: none;
+}
+
+.fz-stage-img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	transform-origin: 0 0;
+	transition: filter 0.55s var(--fz-ease);
+}
+
+/*
+ * `contain` in the hero, `cover` in the thumbnail.
+ *
+ * The frame already carries the picture's own ratio, so `contain` normally
+ * letterboxes nothing — it only takes effect when max-height clamps a very
+ * tall image, and there showing the whole picture beats filling the frame:
+ * this dialog's entire job is to describe what is *in* the image, so cropping
+ * the subject out of it is the one thing it must not do. The thumbnail is a
+ * 66px square where the opposite is true — nobody reads a subject at that
+ * size, and letterboxing inside it just looks broken.
+ */
+#fz-prompt-overlay[data-hero="full"] .fz-stage-source .fz-stage-img {
+	object-fit: contain;
+}
+
+#fz-prompt-overlay[data-hero="thumb"] .fz-stage-source .fz-stage-img {
+	object-fit: cover;
+}
+
+/*
+ * Only `filter` changes here, deliberately. The FLIP in analysis-dialog.ts
+ * drives `transform` on this same element, and a CSS transform that finishes
+ * on its own clock would snap into place the moment WAAPI releases the
+ * element. Blur's soft edge is covered by the scan layers and the hairline.
+ */
+.fz-stage[data-busy="1"] .fz-stage-img {
+	filter: blur(9px) saturate(1.25) brightness(1.04);
+}
+
+/* ------------------------------------------------------------------ *
+ * 4b. The strip inside the picture
+ *
+ * Every control the flow needs, and the prompt it produces, live *on* the
+ * image rather than in a column under it. Two reasons: the card was a picture
+ * with a form bolted below it, and the prompt is a statement about that
+ * picture, so reading it away from the picture is the wrong shape.
+ *
+ * It is one element, built once in analysis-dialog.ts and refilled per state,
+ * for the same reason the card is: a strip that is replaced cannot animate.
+ *
+ * Legibility over an unknown photograph comes from the scrim, which reaches
+ * far above the strip and fades out, so there is never a hard line where it
+ * starts. Everything on it is pinned light — the strip is over the picture, not
+ * over the page, so it does not follow the page's scheme.
+ * ------------------------------------------------------------------ */
+
+.fz-hero {
+	position: absolute;
+	inset: auto 0 0 0;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+	padding: 10px;
+}
+
+.fz-hero:empty {
+	display: none;
+}
+
+.fz-hero::before {
+	content: "";
+	position: absolute;
+	inset: -104px 0 0 0;
+	background: linear-gradient(
+		180deg,
+		transparent 0%,
+		rgba(7, 5, 18, 0.42) 42%,
+		rgba(7, 5, 18, 0.78) 100%
+	);
+	pointer-events: none;
+}
+
+.fz-hero > * {
+	position: relative;
+}
+
+/* The thumbnail is 66px square: there is no room for a strip, and the prompt
+   has moved to the panel's recap by the time it shrinks. */
+#fz-prompt-overlay[data-hero="thumb"] .fz-stage-source .fz-hero {
+	display: none;
+}
+
+/* Held down while the frame is mid-FLIP — the strip is inside the element
+   being scaled, and text under a scale animation shears. */
+.fz-card[data-morphing="1"] .fz-hero {
+	opacity: 0;
+}
+
+.fz-hero-sheet {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+/* Pinned light: this text is on the photograph. */
+.fz-hero .fz-eyebrow {
+	color: rgba(255, 255, 255, 0.72);
+}
+
+.fz-hero .fz-prompt-text {
+	/* Shorter than the panel's copy of it — this is inside the picture, and a
+	   scroll box that eats the whole frame stops the picture being the subject.
+	   4.5 lines keeps the half-line that says there is more. */
+	max-height: calc(4.5 * var(--fz-line) * 1em);
+	color: #ffffff;
+	text-shadow: 0 1px 2px rgba(7, 5, 18, 0.5);
+}
+
+.fz-hero .fz-prompt-text::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.4);
+}
+
+/*
+ * Lime, not white. A white ring is what a browser draws around a *broken*
+ * control, and on this strip it read as a border the button had grown rather
+ * than as focus. The family's own lit lime stays visible over a photograph
+ * without ever looking like part of the button.
+ */
+.fz-hero .fz-prompt-text:focus-visible {
+	outline-color: var(--fz-btn-lit);
+}
+
+.fz-hero .fz-prompt-head {
+	margin-bottom: 8px;
+}
+
+/* The chips beside the eyebrow, on the picture and below it alike. */
+.fz-prompt-tools {
+	display: flex;
+	flex: none;
+	gap: 6px;
+	align-items: center;
+}
+
+/* ------------------------------------------------------------------ *
+ * 5. The scan
+ *
+ * Two layers over the blurred image. The static grid says "pixels"; the beam
+ * is what moves, and it carries a brighter copy of that same grid inside a
+ * masked band so the grid appears to light up as the band passes.
+ *
+ * The beam translates rather than animating `top`, so the whole loop is one
+ * compositor property. Its grid slides with it, but an 8px repeat sliding
+ * hundreds of px reads as static — which is why the grid can ride along.
+ * ------------------------------------------------------------------ */
+
+.fz-scan {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	border-radius: inherit;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.45s var(--fz-ease);
+}
+
+.fz-stage[data-busy="1"] .fz-scan {
+	opacity: 1;
+}
+
+/*
+ * opacity: 0 hides the scan but does not stop it — a paused-looking dialog
+ * would still be running two compositor animations for as long as it is open.
+ * The frame is idle in three of the five states, so this is most of them.
+ */
+.fz-stage:not([data-busy="1"]) .fz-scan-beam,
+.fz-stage:not([data-busy="1"]) .fz-scan-veil {
+	animation-play-state: paused;
+}
+
+.fz-scan-grid {
+	position: absolute;
+	inset: 0;
+	opacity: 0.18;
+	background-image: repeating-linear-gradient(
+			0deg,
+			rgba(255, 255, 255, 0.85) 0 1px,
+			transparent 1px 8px
+		),
+		repeating-linear-gradient(
+			90deg,
+			rgba(255, 255, 255, 0.85) 0 1px,
+			transparent 1px 8px
+		);
+}
+
+.fz-scan-beam {
+	position: absolute;
+	inset: 0;
+	background-image: linear-gradient(
+			180deg,
+			transparent 40%,
+			rgba(255, 255, 255, 0.5) 49%,
+			rgba(255, 255, 255, 0.95) 50%,
+			rgba(255, 255, 255, 0.5) 51%,
+			transparent 60%
+		),
+		repeating-linear-gradient(
+			0deg,
+			rgba(255, 255, 255, 0.9) 0 1px,
+			transparent 1px 8px
+		),
+		repeating-linear-gradient(
+			90deg,
+			rgba(255, 255, 255, 0.9) 0 1px,
+			transparent 1px 8px
+		);
+	-webkit-mask-image: linear-gradient(
+		180deg,
+		transparent 34%,
+		#000 46%,
+		#000 54%,
+		transparent 66%
+	);
+	mask-image: linear-gradient(
+		180deg,
+		transparent 34%,
+		#000 46%,
+		#000 54%,
+		transparent 66%
+	);
+	animation: fz-scan-sweep 2.4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+@keyframes fz-scan-sweep {
+	0% {
+		transform: translateY(-100%);
+	}
+	100% {
+		transform: translateY(100%);
+	}
+}
+
+/* A slow breathing wash, so the frame never looks frozen between sweeps. */
+.fz-scan-veil {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(
+		90% 60% at 50% 50%,
+		rgba(120, 170, 255, 0.16) 0%,
+		transparent 70%
+	);
+	animation: fz-scan-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes fz-scan-breathe {
+	0%,
+	100% {
+		opacity: 0.35;
+	}
+	50% {
+		opacity: 1;
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * 7. Panels — the part that swaps
+ *
+ * position: relative so an outgoing panel can be lifted out of flow and
+ * cross-faded under the incoming one while the card height springs.
+ * ------------------------------------------------------------------ */
+
+.fz-panel-host {
+	position: relative;
+	margin-top: 8px;
+}
+
+/*
+ * Most states now put everything inside the picture, which leaves this host
+ * holding an empty panel — and an empty panel is still 8px of margin and a
+ * flex box. It only exists when it has content. During a transition the
+ * outgoing panel still counts, which is what keeps the height from jumping
+ * before the cross-fade has finished.
+ */
+.fz-panel-host:not(:has(.fz-panel > *)) {
+	display: none;
+}
+
+.fz-panel {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.fz-panel[data-leaving="1"] {
+	position: absolute;
+	inset: 0 0 auto;
+	pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * 8. Pieces used inside panels
+ * ------------------------------------------------------------------ */
+
+/*
+ * The running status rides ON the picture, not under it.
+ *
+ * It belongs there because it is a statement about that image — and because a
+ * status line below the frame pushes the layout down when it appears and pulls
+ * it back up when it goes, which is a whole extra reflow for a label.
+ *
+ * Pinned dark regardless of scheme: it floats over an unknown photograph, and
+ * its own material is the only thing that makes it legible on all of them.
+ */
+.fz-stage-status {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	z-index: 2;
+	display: flex;
+	gap: 7px;
+	align-items: center;
+	max-width: calc(100% - 20px);
+	margin: 0;
+	padding: 7px 13px 7px 10px;
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	border-radius: 999px;
+	background: rgba(18, 20, 26, 0.58);
+	-webkit-backdrop-filter: blur(18px) saturate(180%);
+	backdrop-filter: blur(18px) saturate(180%);
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+	color: #ffffff;
+	font-family: inherit;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.35;
+	opacity: 0;
+	transform: translateY(-6px);
+	transition: opacity 0.3s var(--fz-ease), transform 0.4s var(--fz-spring);
+	pointer-events: none;
+}
+
+.fz-stage[data-busy="1"] .fz-stage-status {
+	opacity: 1;
+	transform: none;
+}
+
+.fz-stage-status svg {
+	flex: none;
+	width: 14px;
+	height: 14px;
+	animation: fz-spin 1.5s linear infinite;
+}
+
+.fz-stage:not([data-busy="1"]) .fz-stage-status svg {
+	animation-play-state: paused;
+}
+
+@keyframes fz-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.fz-stage-status b {
+	overflow: hidden;
+	font-weight: inherit;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	animation: fz-phase-in 0.45s var(--fz-ease) both;
+}
+
+@keyframes fz-phase-in {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+}
+
+.fz-skeleton {
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+}
+
+.fz-skeleton i {
+	height: 11px;
+	border-radius: 6px;
+	background: linear-gradient(
+		100deg,
+		var(--fz-faint) 30%,
+		var(--fz-hairline) 50%,
+		var(--fz-faint) 70%
+	);
+	background-size: 240% 100%;
+	animation: fz-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes fz-shimmer {
+	to {
+		background-position: -240% 0;
+	}
+}
+
+/* --- the prompt block ------------------------------------------------- */
+
+/*
+ * A slow aurora rather than a flat tint. It drifts over ~18s, which is below
+ * the threshold where peripheral vision reads it as "something is happening" —
+ * the point is that the panel looks alive when you come back to it, not that
+ * you watch it move.
+ */
+/*
+ * Deliberately unstyled — no frame, no fill. The prompt is output to read and
+ * copy, and every box drawn around it was one more rounded rectangle nested
+ * inside the card's own.
+ */
+.fz-prompt-block {
+	position: relative;
+}
+
+/*
+ * The label and the copy chip share a row.
+ *
+ * The chip used to be absolutely positioned in the block's corner, which meant
+ * its height was invisible to the text below it — at 26px tall over a 34px
+ * offset the two ended up 1px apart. In flow, the gap is a gap.
+ */
+.fz-prompt-head {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+
+.fz-prompt-head .fz-eyebrow {
+	margin-bottom: 0;
+}
+
+.fz-eyebrow {
+	display: block;
+	margin-bottom: 8px;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--fz-muted);
+}
+
+/*
+ * Every one of these is declared, not inherited, and that is deliberate.
+ *
+ * This dialog lives in the host page's DOM, so the host's stylesheet reaches
+ * it: a site with `p { background:#fff }` painted a white slab behind this
+ * text, and a site with its own `font` rule would resize it. Anything left
+ * unspecified here is a bet on a stranger's CSS.
+ */
+/*
+ * Plain text in a scroll box, and every property is declared rather than
+ * inherited — this dialog sits in the host page's DOM, so a site with its own
+ * `p { ... }` rule reaches it. That is not hypothetical: one painted a white
+ * slab behind this text and another made it resizable.
+ *
+ * The height is 7.5 lines, not 7 or 8, so a half-cut line is always visible at
+ * the bottom when there is more. That half line is the scroll affordance —
+ * a clean edge at line 8 looks like the end of the text.
+ */
+.fz-prompt-text {
+	--fz-line: 1.6;
+	max-height: calc(7.5 * var(--fz-line) * 1em);
+	overflow-y: auto;
+	margin: 0;
+	padding: 0 6px 0 0;
+	border: 0;
+	background: transparent;
+	resize: none;
+	font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+	font-size: 12.5px;
+	font-weight: 400;
+	font-style: normal;
+	line-height: var(--fz-line);
+	letter-spacing: normal;
+	text-align: left;
+	text-transform: none;
+	color: var(--fz-text);
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+/*
+ * The recap shown once the prompt is no longer the subject. A plain max-height
+ * cuts the last line through the middle of the letterforms, which reads as a
+ * rendering fault rather than as "there is more" — the mask fades it out
+ * instead, and the full text is one state back.
+ */
+.fz-prompt-text[data-clamped="1"] {
+	max-height: calc(3 * var(--fz-line) * 1em);
+	overflow: hidden;
+	-webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+	mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+}
+
+.fz-prompt-text:focus-visible {
+	outline: 2px solid var(--fz-accent);
+	outline-offset: 4px;
+	border-radius: 6px;
+}
+
+.fz-prompt-text::-webkit-scrollbar {
+	width: 5px;
+}
+
+.fz-prompt-text::-webkit-scrollbar-thumb {
+	border-radius: 3px;
+	background: var(--fz-hairline);
+}
+
+/* --- buttons ---------------------------------------------------------- */
+
+/*
+ * The lime key, matching the popup's .btn exactly: a face lit from above, a
+ * bright hairline along its top edge and a dark one along its bottom so the
+ * face looks like it curves away, and a lime bloom underneath rather than a
+ * grey drop shadow. Pressing it moves it 1px down and pulls the bloom in.
+ */
+.fz-btn {
+	display: inline-flex;
+	gap: 9px;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	padding: 0 16px;
+	min-height: 42px;
+	border: 0;
+	border-radius: 14px;
+	background-color: var(--fz-btn-deep);
+	background-image: linear-gradient(
+		180deg,
+		var(--fz-btn-lit) 0%,
+		var(--fz-btn-deep) 100%
+	);
+	box-shadow: inset 0 1px 0 var(--fz-btn-sheen), inset 0 0 0 1px
+			var(--fz-btn-rim), inset 0 -3px 6px var(--fz-btn-underside), 0 1px 1.5px
+			var(--fz-btn-contact), 0 8px 18px -5px var(--fz-btn-glow), 0 18px 34px
+			-14px var(--fz-btn-glow);
+	color: #ffffff;
+	font: 500 13.5px/1 inherit;
+	font-family: inherit;
+	/* Pinterest may style buttons globally; action labels stay at weight 500. */
+	font-weight: 500 !important;
+	letter-spacing: -0.01em;
+	/* The download control is an <a> wearing this class — it navigates, so it
+	   stays an anchor, but it should not look like body copy. */
+	text-decoration: none;
+	cursor: pointer;
+	transition: transform 0.16s var(--fz-spring), box-shadow 0.22s var(--fz-ease),
+		filter 0.16s var(--fz-ease);
+}
+
+/* Brightness, not opacity: it lifts the face, the plate and the icon on it
+   together, which is what a light coming up does. Opacity would have shown the
+   card through the button. */
+.fz-btn:hover:not(:disabled) {
+	filter: brightness(1.07) saturate(1.03);
+}
+
+.fz-btn:active:not(:disabled) {
+	transform: translateY(1px);
+	box-shadow: inset 0 1px 0 var(--fz-btn-rim), inset 0 0 0 1px var(--fz-btn-rim),
+		inset 0 -1px 3px var(--fz-btn-underside), 0 1px 1px var(--fz-btn-contact), 0
+			3px 8px -4px var(--fz-btn-glow);
+}
+
+.fz-btn:disabled {
+	transform: none;
+	box-shadow: inset 0 1px 0 var(--fz-btn-rim);
+	filter: none;
+	cursor: default;
+	opacity: 0.45;
+}
+
+.fz-btn:focus-visible {
+	outline: 2px solid var(--fz-btn-deep);
+	outline-offset: 2px;
+}
+
+.fz-btn-block {
+	width: 100%;
+}
+
+.fz-btn svg {
+	flex: none;
+	width: 15px;
+	height: 15px;
+}
+
+/* The copy control sits on the prompt block's own corner, so the block reads
+   as one object with an affordance rather than as text plus a button. */
+/* Glass in its own right, because it sits on the aurora above and a flat chip
+   there reads as a sticker rather than as part of the panel — so it keeps the
+   family's geometry and focus ring but none of its face. */
+.fz-btn-ghost {
+	flex: none;
+	padding: 6px 11px;
+	min-height: 0;
+	border: 1px solid var(--fz-glass-edge);
+	border-radius: 11px;
+	background-color: var(--fz-glass);
+	background-image: none;
+	-webkit-backdrop-filter: blur(18px) saturate(180%);
+	backdrop-filter: blur(18px) saturate(180%);
+	box-shadow: inset 0 1px 0 var(--fz-inset), 0 2px 8px rgba(9, 12, 20, 0.1);
+	color: var(--fz-text);
+	font-size: 11.5px;
+}
+
+/* Its face is borrowed from whatever is behind it, so it lifts by getting less
+   transparent rather than by brightening — a lime tint here would be read as
+   a state, and copying has one already. */
+.fz-btn-ghost:hover:not(:disabled) {
+	border-color: var(--fz-sheen);
+	filter: none;
+}
+
+.fz-btn-ghost:active:not(:disabled) {
+	box-shadow: inset 0 1px 0 var(--fz-inset), 0 1px 4px rgba(9, 12, 20, 0.12);
+}
+
+.fz-btn-ghost[data-copied="1"] {
+	color: #17924e;
+	border-color: rgba(23, 146, 78, 0.3);
+}
+
+/* Square and label-less, for the collapse control beside Copy. */
+.fz-btn-icon {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	gap: 0;
+}
+
+/*
+ * On the picture, the glass has nothing behind it but a photograph, so it is
+ * pinned light and given its own shadow rather than borrowing the card's.
+ */
+.fz-hero .fz-btn-ghost {
+	border-color: rgba(255, 255, 255, 0.34);
+	background-color: rgba(255, 255, 255, 0.16);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 1px 4px
+		rgba(7, 5, 18, 0.3);
+	color: #ffffff;
+}
+
+.fz-hero .fz-btn-ghost:hover:not(:disabled) {
+	border-color: rgba(255, 255, 255, 0.55);
+	background-color: rgba(255, 255, 255, 0.28);
+}
+
+.fz-hero .fz-btn-ghost[data-copied="1"] {
+	border-color: rgba(120, 240, 170, 0.5);
+	color: #b8ffd5;
+}
+
+.fz-hero .fz-btn:focus-visible {
+	outline-color: var(--fz-btn-lit);
+}
+
+/* One glyph for both directions: down puts the prompt away, and whichever
+   shape is collapsed — the strip on the picture, or the block below it — turns
+   it over to mean "bring it back". */
+#fz-prompt-overlay [data-prompt="collapsed"] .fz-btn-collapse svg {
+	transform: rotate(180deg);
+}
+
+/* --- the generated tile ----------------------------------------------- */
+
+/*
+ * The same .fz-stage as the source image — same frame, same scan — so the
+ * wait for a generated image reads as the same kind of work as the analysis.
+ * It only differs in aspect: square until the real one lands, at which point
+ * analysis-dialog.ts sets the true ratio inline.
+ */
+.fz-stage-result {
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	max-height: 100vh;
+	border-radius: 18px;
+}
+
+.fz-result-img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	animation: fz-result-in 0.7s var(--fz-spring) both;
+}
+
+@keyframes fz-result-in {
+	from {
+		opacity: 0;
+		transform: scale(1.06);
+		filter: blur(12px);
+	}
+}
+
+.fz-error {
+	margin: 0;
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--fz-text);
+}
+
+/* ------------------------------------------------------------------ *
+ * 9. Entrance and reduced motion
+ * ------------------------------------------------------------------ */
+
+.fz-card[data-entering="1"] {
+	animation: fz-card-in 0.62s var(--fz-spring) both;
+}
+
+@keyframes fz-card-in {
+	from {
+		opacity: 0;
+		transform: scale(0.92) translateY(-14px);
+	}
+}
+
+/*
+ * Everything above degrades to a plain cross-fade. The scan loses its motion
+ * but keeps the grid and the blur, so "the image is being read" still reads —
+ * the state must stay legible without animation, not just stop moving.
+ */
+@media (prefers-reduced-motion: reduce) {
+	#fz-prompt-overlay *,
+	#fz-prompt-overlay *::before,
+	#fz-prompt-overlay *::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.12s !important;
+	}
+
+	.fz-scan-beam {
+		transform: translateY(0);
+		-webkit-mask-image: none;
+		mask-image: none;
+		opacity: 0.25;
+	}
+
+	.fz-scan-veil {
+		opacity: 0.7;
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * 10. The quick trigger
+ *
+ * One button, reused. It is NOT injected per image: a page can hold hundreds
+ * of them and lazy-load hundreds more, so decorating each one costs a
+ * MutationObserver and a node per pin, forever. Instead a single fixed button
+ * is parked over whichever image the pointer is on — see analysis-dialog.ts.
+ *
+ * It has its own id because it must survive independently of the dialog: the
+ * dialog is removed on close, the trigger lives as long as the page does.
+ * ------------------------------------------------------------------ */
+
+#fz-quick-trigger {
+	/* This node is appended directly to <body>, outside #fz-prompt-overlay. */
+	--fz-quick-lit: #9a6cff;
+	--fz-quick-deep: #6829d4;
+	--fz-quick-sheen: rgba(255, 255, 255, 0.45);
+	--fz-quick-rim: rgba(255, 255, 255, 0.14);
+	--fz-quick-underside: rgba(24, 6, 64, 0.26);
+	--fz-quick-contact: rgba(24, 6, 64, 0.34);
+	--fz-quick-glow: rgba(88, 28, 205, 0.5);
+
+	position: fixed;
+	z-index: 2147483646;
+	display: grid;
+	width: 34px;
+	height: 34px;
+	place-items: center;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 11px;
+	background-color: var(--fz-quick-deep);
+	background-image: linear-gradient(180deg, var(--fz-quick-lit) 0%, var(--fz-quick-deep) 100%);
+	box-shadow: inset 0 1px 0 var(--fz-quick-sheen), inset 0 0 0 1px var(--fz-quick-rim),
+		inset 0 -3px 6px var(--fz-quick-underside), 0 1px 1.5px var(--fz-quick-contact), 0
+		8px 18px -5px var(--fz-quick-glow);
+	color: #ffffff;
+	cursor: pointer;
+	opacity: 0;
+	transform: scale(0.82);
+	transition: opacity 0.16s var(--fz-ease, ease), transform 0.24s
+		cubic-bezier(0.32, 0.72, 0, 1);
+	pointer-events: none;
+}
+
+#fz-quick-trigger[data-shown="1"] {
+	opacity: 1;
+	transform: scale(1);
+	pointer-events: auto;
+}
+
+#fz-quick-trigger:hover {
+	filter: brightness(1.08) saturate(1.03);
+}
+
+#fz-quick-trigger:active {
+	transform: scale(0.92);
+}
+
+#fz-quick-trigger svg {
+	width: 19px;
+	height: 19px;
+}
+
+/*
+ * Pinned lime, in both themes. The button floats on photographs, not on the
+ * page, so it should not follow the page's colour scheme — a light chip over a
+ * bright photo disappears as surely as a dark one over a dark photo, and a
+ * saturated hue no photograph is likely to hold is what stays findable at a
+ * glance. It is also the extension's own mark, which is what it is announcing.
+ */
+@media (prefers-reduced-motion: reduce) {
+	#fz-quick-trigger {
+		transition-duration: 0.01ms;
+		transform: none;
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * 11. Narrow viewports
+ * ------------------------------------------------------------------ */
+
+@media (max-width: 560px) {
+	#fz-prompt-overlay {
+		top: 12px;
+		right: 12px;
+		width: calc(100vw - 24px);
+	}
+
+	.fz-card {
+		max-height: calc(100vh - 24px);
+	}
+}

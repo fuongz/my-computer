@@ -1,0 +1,39 @@
+{
+	"name": "@fuongz/chrome-extension",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"clean": "rm -rf extension/dist",
+		"build:tools": "bun build src/tools/pinterest-theme/content.ts --outfile=extension/dist/tools/pinterest-theme.js --target=browser --format=iife",
+		"build:tools:assets": "mkdir -p extension/dist/tools && cat src/tools/pinterest-theme/theme.css src/tools/pinterest-theme/analysis-dialog.css > extension/dist/tools/pinterest-theme.css",
+		"build:popup:js": "bun build src/popup/index.ts --outfile=extension/dist/popup/popup.js --target=browser --format=esm",
+		"build:popup:assets": "mkdir -p extension/dist/popup && cp node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2 extension/dist/popup/",
+		"build:popup:html": "mkdir -p extension/dist/popup && cp src/popup/index.html extension/dist/popup/index.html",
+		"build:popup:css": "tailwindcss -i src/popup/style.css -o extension/dist/popup/style.css --minify",
+		"build:options": "mkdir -p extension/dist/options && bun build src/options/index.ts --outfile=extension/dist/options/options.js --target=browser --format=esm && cp src/options/index.html extension/dist/options/index.html",
+		"build:background": "mkdir -p extension/dist/background && bun build src/background/index.ts --outfile=extension/dist/background/service-worker.js --target=browser --format=esm",
+		"build:popup": "bun run build:popup:js && bun run build:popup:assets && bun run build:popup:html && bun run build:popup:css",
+		"build": "bun run clean && bun run build:tools && bun run build:tools:assets && bun run build:popup && bun run build:options && bun run build:background",
+		"dev:tools": "bun build src/tools/pinterest-theme/content.ts --outfile=extension/dist/tools/pinterest-theme.js --target=browser --format=iife --watch",
+		"dev:popup": "bun build src/popup/index.ts --outfile=extension/dist/popup/popup.js --target=browser --format=esm --watch",
+		"dev:css": "tailwindcss -i src/popup/style.css -o extension/dist/popup/style.css --watch",
+		"dev": "bun run build && (bun run dev:tools & bun run dev:popup & bun run dev:css & wait)",
+		"icons": "bun run scripts/make-icons.ts",
+		"preview": "bun run scripts/preview-theme.ts",
+		"preview:popup": "bun run scripts/preview-popup.ts",
+		"preview:dialog": "bun run scripts/preview-dialog.ts",
+		"test:connection": "bun run scripts/test-connection.ts",
+		"test:prompt-flow": "bun run scripts/test-prompt-flow.ts",
+		"typecheck": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"@hugeicons/core-free-icons": "^4.2.3",
+		"@tailwindcss/cli": "^4.3.3",
+		"@types/bun": "latest",
+		"@types/chrome": "^0.0.290",
+		"geist": "^1.7.2",
+		"tailwindcss": "^4.3.3",
+		"typescript": "^5.7.0"
+	}
+}

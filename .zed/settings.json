@@ -1,0 +1,55 @@
+// Zed project settings for deal-conversion-agent.
+// Biome (root biome.json) is the single formatter + linter for this repo.
+// There is no ESLint config here, so the built-in eslint server is disabled —
+// it only emitted `eslint/noLibrary` and competed for code actions on save.
+{
+	"format_on_save": "on",
+	"languages": {
+		"JavaScript": {
+			"language_servers": ["!eslint", "..."],
+			"formatter": { "language_server": { "name": "biome" } },
+			"code_actions_on_format": {
+				"source.fixAll.biome": true,
+				"source.organizeImports.biome": true
+			}
+		},
+		"TypeScript": {
+			"language_servers": ["!eslint", "..."],
+			"formatter": { "language_server": { "name": "biome" } },
+			"code_actions_on_format": {
+				"source.fixAll.biome": true,
+				"source.organizeImports.biome": true
+			}
+		},
+		"TSX": {
+			"language_servers": ["!eslint", "..."],
+			"formatter": { "language_server": { "name": "biome" } },
+			"code_actions_on_format": {
+				"source.fixAll.biome": true,
+				"source.organizeImports.biome": true
+			}
+		},
+		"CSS": {
+			"formatter": { "language_server": { "name": "biome" } },
+			"code_actions_on_format": {
+				"source.fixAll.biome": true
+			}
+		},
+		"JSON": {
+			"formatter": { "language_server": { "name": "biome" } },
+			"code_actions_on_format": {
+				"source.organizeImports.biome": true
+			}
+		},
+		"JSONC": {
+			"formatter": { "language_server": { "name": "biome" } }
+		}
+	},
+	"lsp": {
+		"biome": {
+			"settings": {
+				"require_config_file": true
+			}
+		}
+	}
+}

@@ -1,0 +1,22 @@
+{
+	"name": "@fuongz/generation",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"//exports": "TypeScript source, like @fuongz/auth. Both consumers are bundlers.",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"build": "echo '@fuongz/generation ships TypeScript source — nothing to build'",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@fuongz/auth": "workspace:*",
+		"drizzle-orm": "^0.45.2"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^5.20260810.1",
+		"typescript": "^6.0.3"
+	}
+}

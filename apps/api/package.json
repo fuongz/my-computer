@@ -1,0 +1,33 @@
+{
+	"name": "@fuongz/api",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"//imports": "One alias, declared HERE and mirrored in tsconfig.json `paths`. Nowhere else — `#` is a Node subpath prefix that wrangler's bundler and `bun run` both resolve natively.",
+	"imports": {
+		"#/*": "./src/*"
+	},
+	"scripts": {
+		"dev": "wrangler dev --port 8788",
+		"build": "wrangler deploy --dry-run --outdir dist",
+		"deploy": "wrangler deploy",
+		"typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.scripts.json",
+		"test:api": "bun run scripts/test-api.ts",
+		"test:flow": "bun run scripts/test-generation-flow.ts",
+		"test": "bun run test:api && bun run test:flow",
+		"cf-typegen": "wrangler types"
+	},
+	"dependencies": {
+		"@fuongz/auth": "workspace:*",
+		"@fuongz/generation": "workspace:*",
+		"drizzle-orm": "^0.45.2",
+		"hono": "^4.10.4",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.3.14",
+		"@types/node": "^26.2.0",
+		"typescript": "^6.0.3",
+		"wrangler": "^4.120.0"
+	}
+}

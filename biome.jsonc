@@ -1,0 +1,53 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "linter": {
+    "enabled": true,
+    "rules": { "preset": "recommended" }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "tab"
+  },
+  "assist": { "enabled": false },
+  "css": {
+    "parser": { "tailwindDirectives": true }
+  },
+  "files": {
+    "includes": [
+      "**/*",
+      "!**/node_modules",
+      "!**/*.d.ts",
+      "!**/dist",
+      "!**/.output",
+      "!**/.vite",
+      "!**/.tanstack",
+      "!**/.wrangler",
+      "!**/routeTree.gen.ts",
+      "!apps/chrome-extension"
+    ]
+  },
+  "overrides": [
+    {
+      // Vendored by the shadcn CLI and overwritten by the next `add`, so a fix applied
+      // inside these files is a fix that silently disappears. Exceptions belong here.
+      "includes": ["**/components/ui/**"],
+      "linter": {
+        "rules": {
+          "a11y": { "noLabelWithoutControl": "off", "useSemanticElements": "off" },
+          "correctness": {
+            "noUnusedImports": "off",
+            "useExhaustiveDependencies": "off"
+          },
+          "style": { "useImportType": "off" },
+          "suspicious": {
+            "noArrayIndexKey": "off",
+            "noDoubleEquals": "off",
+            // The sidebar persists its open state in a cookie; that is the registry's
+            // design, not ours to relitigate in a file we do not own.
+            "noDocumentCookie": "off"
+          }
+        }
+      }
+    }
+  ]
+}

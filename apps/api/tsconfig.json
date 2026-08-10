@@ -1,0 +1,13 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"types": ["@types/node", "./worker-configuration.d.ts"],
+		"lib": ["ES2022"],
+		// Mirrors `imports` in package.json. `tsc` reads ONLY this; every runtime
+		// reads only that. Two declarations, no third.
+		"paths": {
+			"#/*": ["./src/*"]
+		}
+	},
+	"include": ["src"]
+}
