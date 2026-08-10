@@ -1,5 +1,5 @@
 ---
-status: processing
+status: done
 assignees: ["fuongz"]
 created_at: 2026-08-10 00:00:00Z
 priority: high
@@ -64,6 +64,12 @@ one option. Implementation begins only once every gating box is checked.
       only, never values.
 - [x] **V2.** Verify route protection and API-key management using deterministic
       tests or a local authenticated walkthrough, then run `bun run gate`.
+
+**Shipped and verified** 2026-08-10. GitHub is the only sign-in method
+(`apps/web/src/server/auth/core.ts`), `/api/auth/$` is mounted, `/login` exists, and
+every product route redirects an unauthenticated visitor. Keys are issued with the
+`fz_` prefix and a required name from `@fuongz/auth`, and are now what the generation
+API authenticates with — see the 06 card. D1 + Drizzle with migration `0000` applied.
 
 ## Context
 

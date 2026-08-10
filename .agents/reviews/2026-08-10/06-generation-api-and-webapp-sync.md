@@ -21,7 +21,16 @@ option. Implementation begins only once every gating box is checked.
 
 **Approved** 2026-08-10: M1, N1, Q1 selected; every gating box checked.
 
-**Implemented** 2026-08-10. `bun run gate` green; four deterministic suites pass.
+**Implemented** 2026-08-10, and committed. Deliberately still `processing`, not
+`done`: **V1 asks for the migration to be applied locally AND remotely**, and the
+remote half is outstanding — `CLOUDFLARE_ACCOUNT_ID` points at an account the
+logged-in wrangler token cannot reach (`7403`), so `db:migrate:remote` and `deploy`
+both fail. Also outstanding: the R2 bucket `prod-image-analyzed`, the secrets named in
+both `.env.example` files, and verifying the Replicate prices in
+`apps/api/src/lib/pricing.ts` against the model's page. Everything else is done and
+exercised locally.
+
+`bun run gate` green; four deterministic suites pass.
 Deviations and decisions taken during implementation, all deliberate:
 
 - **X1, as shared pieces rather than one factory.** `@fuongz/auth` exports

@@ -1,5 +1,5 @@
 ---
-status: todo # todo | processing | done | dropped
+status: done
 assignees: ["fuongz"]
 created_at: 2026-08-10 00:00:00Z # the date for this card
 priority: low # low | medium | high
