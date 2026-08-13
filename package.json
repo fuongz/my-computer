@@ -6,20 +6,16 @@
 	"workspaces": ["apps/*", "packages/*"],
 	"scripts": {
 		"build": "bun run --filter '*' build",
-		"dev": "bun run --cwd apps/web dev",
-		"dev:api": "bun run --cwd apps/api dev",
-		"dev:extension": "bun run --filter @fuongz/chrome-extension dev",
+		"dev": "bun run --filter @fuongz/chrome-extension dev",
 		"typecheck": "bun run --filter '*' typecheck",
-		"lint": "biome lint && node scripts/audit-layout.mjs",
+		"lint": "biome lint",
 		"format": "biome format --write",
 		"check": "biome check",
 		"gate": "bun run build && bun run lint && bun run typecheck",
 		"icons": "bun run --filter @fuongz/chrome-extension icons",
 		"preview": "bun run --filter @fuongz/chrome-extension preview",
 		"preview:popup": "bun run --filter @fuongz/chrome-extension preview:popup",
-		"test:connection": "bun run --filter @fuongz/chrome-extension test:connection",
-		"test:prompt-flow": "bun run --filter @fuongz/chrome-extension test:prompt-flow",
-		"test:api": "bun run --filter @fuongz/api test"
+		"preview:task-name": "bun run --filter @fuongz/chrome-extension preview:task-name"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.3",

@@ -82,6 +82,8 @@ async function init(): Promise<void> {
 	back.prepend(renderIcon(ArrowLeft01Icon, "h-4 w-4"));
 	back.addEventListener("click", showDashboard);
 
+	// The one setting that is the extension's rather than a tool's: the
+	// OpenRouter key Task Name Translator spends.
 	const settings = byId("settings");
 	settings.append(renderIcon(Settings02Icon, "h-[17px] w-[17px]"));
 	settings.addEventListener("click", () => void chrome.runtime.openOptionsPage());

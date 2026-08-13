@@ -7,11 +7,6 @@ apps/*/dist
 out
 *.tgz
 
-# framework caches / generated output
-.tanstack
-.output
-.vite
-
 # caches
 .cache
 *.tsbuildinfo
@@ -26,6 +21,6 @@ out
 .preview
 
 .env
-.dev.vars
 
+# Leftover local Miniflare state from the removed API. Safe to delete by hand.
 .wrangler

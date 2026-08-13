@@ -358,7 +358,7 @@
 		font-size: 13px;
 		font-weight: 600;
 		letter-spacing: -0.01em;
-		/* The download control in the dialog is an <a> wearing .btn. */
+		/* So an <a> can wear .btn without picking up an underline. */
 		text-decoration: none;
 		cursor: pointer;
 		user-select: none;

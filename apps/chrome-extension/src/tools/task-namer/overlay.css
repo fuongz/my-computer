@@ -1,0 +1,521 @@
+/*
+ * The task-name card, as it appears inside someone else's page.
+ *
+ * Two things make this different from the popup's stylesheet. It carries no
+ * Tailwind and no design tokens — it is injected into a document that has its
+ * own, and importing the popup's would mean shipping the whole palette to every
+ * page. And every rule has to assume the host page is hostile to it: a site with
+ * `* { font-family: Comic Sans }` or `button { text-transform: uppercase }` is
+ * normal, so each property the card depends on is stated rather than inherited.
+ *
+ * It follows the system appearance only. The extension's own Dark/Light/System
+ * choice lives in chrome.storage and this card is injected mid-gesture, after
+ * the page has painted — reading it would mean an async hop before the card can
+ * appear, to theme a surface the user is looking at for ten seconds.
+ */
+
+/* --- the button over the selection ------------------------------------- */
+
+/*
+ * Page coordinates and `position: absolute`, like the card: a control pinned to
+ * the viewport while the text it belongs to scrolls away is pointing at
+ * nothing. Both are placed by overlay.ts, which measures in page space.
+ */
+.fz-tn-trigger {
+	position: absolute;
+	z-index: 2147483647;
+
+	display: grid;
+	place-items: center;
+	box-sizing: border-box;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	margin: 0;
+
+	border: 1px solid #e4e5ea;
+	border-radius: 9px;
+	background: #fbfbfc;
+	box-shadow:
+		0 1px 2px rgba(9, 11, 16, 0.1),
+		0 6px 16px rgba(9, 11, 16, 0.16);
+
+	color: #16181f;
+	line-height: 0;
+	cursor: pointer;
+
+	animation: fz-tn-in 0.12s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.fz-tn-trigger:hover {
+	background: #ffffff;
+	border-color: #d3d6dd;
+}
+
+.fz-tn-trigger-icon {
+	display: block;
+	width: 17px;
+	height: 17px;
+}
+
+/* --- the popover -------------------------------------------------------- */
+
+.fz-tn-card {
+	position: absolute;
+	z-index: 2147483647;
+
+	box-sizing: border-box;
+	width: 340px;
+	max-width: calc(100vw - 40px);
+	padding: 0;
+	margin: 0;
+
+	border: 1px solid #e4e5ea;
+	border-radius: 14px;
+	background: #fbfbfc;
+	box-shadow:
+		0 2px 6px rgba(9, 11, 16, 0.08),
+		0 14px 34px rgba(9, 11, 16, 0.16);
+
+	font-family:
+		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	font-size: 13px;
+	line-height: 1.45;
+	color: #16181f;
+	text-align: left;
+	direction: ltr;
+
+	animation: fz-tn-in 0.16s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/*
+ * The fallback, for a right-click whose selection was already gone: there is
+ * nothing to point at, so the card stops pretending and goes to a corner. The
+ * `!important` beats the inline left/top overlay.ts would otherwise have set.
+ */
+.fz-tn-card[data-place="corner"] {
+	position: fixed;
+	right: 20px;
+	bottom: 20px;
+	left: auto !important;
+	top: auto !important;
+}
+
+.fz-tn-card[data-place="corner"] .fz-tn-arrow {
+	display: none;
+}
+
+/*
+ * A square stood on its corner, with the two edges that face the page kept and
+ * the two that face the card dropped — so the card's border appears to run
+ * around the arrow instead of behind it. Cheaper than two stacked triangles and
+ * it inherits the card's own colours.
+ */
+.fz-tn-arrow {
+	position: absolute;
+	width: 12px;
+	height: 12px;
+	margin-left: -6px;
+	border: 1px solid #e4e5ea;
+	background: #fbfbfc;
+	transform: rotate(45deg);
+}
+
+.fz-tn-card[data-place="below"] .fz-tn-arrow {
+	top: -7px;
+	border-right: 0;
+	border-bottom: 0;
+}
+
+.fz-tn-card[data-place="above"] .fz-tn-arrow {
+	bottom: -7px;
+	border-left: 0;
+	border-top: 0;
+}
+
+.fz-tn-card *,
+.fz-tn-card *::before,
+.fz-tn-card *::after {
+	box-sizing: border-box;
+	font-family: inherit;
+	letter-spacing: normal;
+	text-transform: none;
+}
+
+@keyframes fz-tn-in {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fz-tn-card {
+		animation: none;
+	}
+}
+
+/* --- header ------------------------------------------------------------ */
+
+.fz-tn-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 10px 10px 14px;
+	border-bottom: 1px solid #ececee;
+}
+
+.fz-tn-title {
+	margin: 0;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #6b7280;
+}
+
+/*
+ * `place-items` rather than the button's own default centring: a host page can
+ * set `display`, `line-height` or `padding` on `button` and shift the mark off
+ * centre. The grid states it here instead.
+ */
+.fz-tn-close {
+	flex: none;
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 0;
+	border-radius: 7px;
+	background: transparent;
+	color: #6b7280;
+	line-height: 0;
+	cursor: pointer;
+}
+
+.fz-tn-close-mark {
+	display: block;
+	width: 15px;
+	height: 15px;
+}
+
+.fz-tn-close:hover {
+	background: rgba(11, 13, 18, 0.07);
+	color: #16181f;
+}
+
+/* --- body -------------------------------------------------------------- */
+
+.fz-tn-body {
+	padding: 14px;
+}
+
+.fz-tn-state {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+/* --- what was selected, before the rewrite ----------------------------- */
+
+.fz-tn-before {
+	min-width: 0;
+}
+
+.fz-tn-before-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-bottom: 4px;
+}
+
+/* The row carries the spacing under it, so the label inside adds none of its own. */
+.fz-tn-before-head .fz-tn-label {
+	margin-bottom: 0;
+}
+
+.fz-tn-label {
+	display: block;
+	margin-bottom: 4px;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #9aa1ad;
+}
+
+/*
+ * Three lines, then an ellipsis. A selection can be a paragraph, and a card
+ * that grows to hold it pushes the title — the thing you are here for — off
+ * the bottom of a short window.
+ */
+.fz-tn-source {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+	overflow: hidden;
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.45;
+	color: #6b7280;
+	user-select: text;
+	overflow-wrap: anywhere;
+}
+
+/*
+ * Edit, next to the label rather than down in the row of answers: it acts on the
+ * text above it, and it is the second thing anyone reaches for. Quiet enough to
+ * stay out of the way of the buttons that are the point of the card.
+ */
+.fz-tn-edit {
+	flex: none;
+	padding: 2px 6px;
+	border: 0;
+	border-radius: 6px;
+	background: transparent;
+	color: #6b7280;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.4;
+	cursor: pointer;
+}
+
+.fz-tn-edit:hover {
+	background: rgba(11, 13, 18, 0.07);
+	color: #16181f;
+}
+
+/*
+ * The one control in the card that takes focus, so the only one that needs to
+ * show it. Its height is set by overlay.ts as the text grows; the cap here is
+ * the one grow() stops at, after which the box scrolls rather than the card
+ * outgrowing the window. Change one and change the other.
+ */
+.fz-tn-input {
+	display: block;
+	width: 100%;
+	max-height: 168px;
+	padding: 9px 11px;
+	border: 1px solid #e4e5ea;
+	border-radius: 10px;
+	background: #ffffff;
+	color: #16181f;
+	font-size: 12.5px;
+	line-height: 1.45;
+	/* The drag handle would sit over the card's own corner, and the box already
+	   sizes itself to what is in it. */
+	resize: none;
+	overflow-y: auto;
+	user-select: text;
+}
+
+.fz-tn-input:focus {
+	outline: none;
+	border-color: #7c3aed;
+	box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
+}
+
+.fz-tn-result {
+	margin: 0;
+	padding: 10px 12px;
+	border-radius: 10px;
+	background: rgba(9, 11, 16, 0.045);
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.4;
+	/* The one thing the user is here for, so it is the one thing selectable. */
+	user-select: text;
+	overflow-wrap: anywhere;
+}
+
+.fz-tn-note,
+.fz-tn-error {
+	margin: 0;
+	font-size: 12.5px;
+	color: #6b7280;
+}
+
+.fz-tn-error {
+	color: #b42318;
+}
+
+/* --- the spinner ------------------------------------------------------- */
+
+.fz-tn-busy {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.fz-tn-spinner {
+	flex: none;
+	width: 14px;
+	height: 14px;
+	border: 2px solid rgba(9, 11, 16, 0.18);
+	border-top-color: #16181f;
+	border-radius: 50%;
+	animation: fz-tn-spin 0.7s linear infinite;
+}
+
+@keyframes fz-tn-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fz-tn-spinner {
+		animation-duration: 2.4s;
+	}
+}
+
+/* --- actions ----------------------------------------------------------- */
+
+/*
+ * Wraps rather than squeezes: on a page where Replace is offered there are
+ * three buttons, and 340px is not always enough for all of them on one line.
+ */
+.fz-tn-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.fz-tn-btn {
+	min-width: 0;
+	height: 30px;
+	padding: 0 12px;
+	border: 1px solid transparent;
+	border-radius: 9px;
+	font-size: 12.5px;
+	font-weight: 600;
+	line-height: 1;
+	cursor: pointer;
+	transition: filter 0.14s ease;
+}
+
+.fz-tn-btn:disabled {
+	cursor: default;
+}
+
+/*
+ * Nothing to send yet. Dimmed rather than removed, so the row keeps its shape
+ * while the box is being emptied and refilled — and separate from `:disabled`,
+ * which flash() also uses for a second and where a faded "Copied" would be
+ * harder to read than the label it replaced.
+ */
+.fz-tn-btn.fz-tn-off {
+	opacity: 0.45;
+}
+
+.fz-tn-btn:hover:not(:disabled) {
+	filter: brightness(1.06);
+}
+
+.fz-tn-primary {
+	background: #7c3aed;
+	color: #ffffff;
+}
+
+.fz-tn-ghost {
+	background: transparent;
+	border-color: #e4e5ea;
+	color: #16181f;
+}
+
+.fz-tn-ghost:hover:not(:disabled) {
+	background: rgba(11, 13, 18, 0.05);
+}
+
+/* --- dark -------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+	.fz-tn-card {
+		border-color: #262a33;
+		background: #17181d;
+		color: #edeef2;
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.06),
+			0 2px 8px rgba(0, 0, 0, 0.5),
+			0 18px 40px rgba(0, 0, 0, 0.55);
+	}
+
+	.fz-tn-arrow {
+		border-color: #262a33;
+		background: #17181d;
+	}
+
+	.fz-tn-trigger {
+		border-color: #262a33;
+		background: #17181d;
+		color: #edeef2;
+		box-shadow:
+			0 1px 3px rgba(0, 0, 0, 0.5),
+			0 8px 20px rgba(0, 0, 0, 0.55);
+	}
+
+	.fz-tn-trigger:hover {
+		background: #202229;
+		border-color: #363b47;
+	}
+
+	.fz-tn-header {
+		border-bottom-color: #262a33;
+	}
+
+	.fz-tn-title,
+	.fz-tn-note,
+	.fz-tn-label,
+	.fz-tn-source,
+	.fz-tn-close,
+	.fz-tn-edit {
+		color: #9aa1ad;
+	}
+
+	.fz-tn-close:hover,
+	.fz-tn-edit:hover {
+		background: rgba(255, 255, 255, 0.08);
+		color: #edeef2;
+	}
+
+	.fz-tn-input {
+		border-color: #363b47;
+		background: rgba(0, 0, 0, 0.3);
+		color: #edeef2;
+	}
+
+	.fz-tn-input:focus {
+		border-color: #8b5cf6;
+		box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+	}
+
+	.fz-tn-result {
+		background: rgba(0, 0, 0, 0.3);
+	}
+
+	.fz-tn-error {
+		color: #fca5a5;
+	}
+
+	.fz-tn-spinner {
+		border-color: rgba(255, 255, 255, 0.2);
+		border-top-color: #edeef2;
+	}
+
+	.fz-tn-primary {
+		background: #8b5cf6;
+	}
+
+	.fz-tn-ghost {
+		border-color: #363b47;
+		color: #edeef2;
+	}
+
+	.fz-tn-ghost:hover:not(:disabled) {
+		background: rgba(255, 255, 255, 0.07);
+	}
+}

@@ -10,17 +10,23 @@
  * exist; this says what they look like.
  */
 
-import { Calendar03Icon, DarkModeIcon } from "@hugeicons/core-free-icons";
+import {
+	Calendar03Icon,
+	DarkModeIcon,
+	TaskEdit01Icon,
+} from "@hugeicons/core-free-icons";
 
 import type { IconData } from "../common/icons";
 import { PINTEREST_THEME_ID } from "../tools/pinterest-theme/constants";
 import { T1_TRACKER_ID } from "../tools/t1-tracker/constants";
 import { renderT1Panel } from "../tools/t1-tracker/panel";
+import { TASK_NAMER_ID } from "../tools/task-namer/constants";
 
 /** Every tool's mark, from Hugeicons' free Stroke Rounded set. */
 const TOOL_ICONS: Record<string, IconData> = {
 	[PINTEREST_THEME_ID]: DarkModeIcon,
 	[T1_TRACKER_ID]: Calendar03Icon,
+	[TASK_NAMER_ID]: TaskEdit01Icon,
 };
 
 export function getToolIcon(toolId: string): IconData | undefined {

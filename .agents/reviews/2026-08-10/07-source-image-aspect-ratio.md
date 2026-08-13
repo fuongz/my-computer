@@ -1,10 +1,13 @@
 ---
-status: todo # todo | processing | done | dropped
+status: dropped # todo | processing | done | dropped
 assignees: ["fuongz"]
 created_at: 2026-08-10 00:00:00Z # the date for this card
 priority: medium # low | medium | high
 tags: ["chrome-extension", "api", "image-generation"]
 ---
+
+> **Dropped 2026-08-11.** Never implemented, and the image-generation flow it
+> belonged to has been removed from the extension.
 
 # Review: generate at the source image's closest supported ratio
 

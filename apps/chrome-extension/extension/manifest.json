@@ -3,16 +3,12 @@
   "name": "fuongz's Extensions",
   "version": "1.0.0",
   "description": "A small toolbox of browser tweaks, each switched on or off from one dashboard.",
-  "permissions": ["storage", "contextMenus", "scripting"],
+  "permissions": ["storage", "contextMenus", "scripting", "activeTab"],
   "host_permissions": [
     "https://*.pinterest.com/*",
     "https://esports-api.lolesports.com/*",
-    "https://static.lolesports.com/*"
-  ],
-  "optional_host_permissions": [
-    "https://*/*",
-    "http://localhost/*",
-    "http://127.0.0.1/*"
+    "https://static.lolesports.com/*",
+    "https://openrouter.ai/*"
   ],
   "icons": {
     "16": "assets/icons/icon-16.png",
@@ -21,10 +17,17 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*"],
+      "matches": ["https://*.pinterest.com/*"],
       "css": ["dist/tools/pinterest-theme.css"],
       "js": ["dist/tools/pinterest-theme.js"],
       "run_at": "document_start",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "css": ["dist/tools/task-namer.css"],
+      "js": ["dist/tools/task-namer.js"],
+      "run_at": "document_idle",
       "all_frames": false
     }
   ],

@@ -12,15 +12,8 @@
  *
  * The stylesheet is inert without that attribute, so "off" costs the page a
  * parsed-but-unmatched stylesheet and nothing else.
- *
- * This bundle also carries the "How was this made?" dialog, which is NOT part
- * of the theme — it runs on every http(s) page, Pinterest or not. It lives in
- * analysis-dialog.ts and is entered at the one call below; the manifest
- * declares a single content script, which is the only reason the two ship
- * together.
  */
 
-import { listenForAnalysisMessages, mountQuickTrigger } from "./analysis-dialog";
 import {
 	getAppearance,
 	onAppearanceChanged,
@@ -42,7 +35,6 @@ import {
 } from "./constants";
 
 const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
-const isPinterest = /(^|\.)pinterest\.com$/i.test(location.hostname);
 
 /*
  * Both halves of the answer are kept here because each can change without the
@@ -53,16 +45,11 @@ let states: ToolStates = readMirroredStates();
 let appearance: Appearance = readMirroredAppearance();
 let dark = resolveDark();
 
-// Theme behavior remains Pinterest-only; prompt UI below runs on every HTTP(S) page.
-if (isPinterest) {
-	applyAttribute(dark);
-	reconcileWithSyncedSettings();
-	watchForSettingChanges();
-	watchForSystemAppearanceChanges();
-	keepThemeAcrossSpaNavigation();
-}
-listenForAnalysisMessages();
-mountQuickTrigger();
+applyAttribute(dark);
+reconcileWithSyncedSettings();
+watchForSettingChanges();
+watchForSystemAppearanceChanges();
+keepThemeAcrossSpaNavigation();
 
 /**
  * Collapses the two knobs — is the tool on, and what appearance did the user

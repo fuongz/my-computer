@@ -1,10 +1,14 @@
 ---
-status: processing
+status: dropped
 assignees: ["fuongz"]
 created_at: 2026-08-10 00:00:00Z
 priority: high
 tags: ["api", "webapp", "chrome-extension", "api-key", "cost", "security"]
 ---
+
+> **Dropped 2026-08-11.** This shipped, then `apps/api` and `apps/web` were
+> deleted along with the generation flow they served — the repo is back to one
+> extension with two tools. Kept as the record of what the removed stack was.
 
 # Review: one public generation API, and extension ↔ webapp sync
 

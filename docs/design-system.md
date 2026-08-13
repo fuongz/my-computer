@@ -6,8 +6,13 @@ undo by accident. Every value here is quoted from
 [`src/common/ui.ts`](../apps/chrome-extension/src/common/ui.ts) — if the two disagree, the code is
 right and this file is stale.
 
-Scope is **the popup only**. `apps/chrome-extension/src/tools/pinterest-theme/theme.css` restyles
-Pinterest's own markup and shares none of this.
+Scope is **the popup and the Settings page**, which link the same compiled
+stylesheet. The two surfaces that live inside somebody else's document share
+none of it and are not governed by this file:
+`apps/chrome-extension/src/tools/pinterest-theme/theme.css` restyles Pinterest's
+own markup, and `apps/chrome-extension/src/tools/task-namer/overlay.css` styles
+the task-name card — which carries no Tailwind and no tokens on purpose, so a
+right-click does not ship the whole palette into the page.
 
 ---
 

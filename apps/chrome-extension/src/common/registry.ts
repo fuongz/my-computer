@@ -10,15 +10,22 @@
  *
  * A tool that works in the popup instead of on a page — T1 Esports Tracker is
  * the first — skips 2 and 3, sets `hasPanel`, and registers its renderer in
- * src/popup/tool-ui.ts. Keep this file free of DOM code either way: content
- * scripts import it through storage.ts.
+ * src/popup/tool-ui.ts.
+ *
+ * A tool whose in-page surface only appears on a click — Task Name Translator —
+ * also skips 3: the service worker injects its bundle with chrome.scripting on
+ * the gesture that needs it, so the tool costs every other page nothing.
+ *
+ * Keep this file free of DOM code whichever shape a tool takes: content scripts
+ * import it through storage.ts.
  */
 
 import { pinterestTheme } from "../tools/pinterest-theme/definition";
 import { t1Tracker } from "../tools/t1-tracker/definition";
+import { taskNamer } from "../tools/task-namer/definition";
 import type { ToolDefinition, ToolState } from "./types";
 
-export const TOOLS: ToolDefinition[] = [pinterestTheme, t1Tracker];
+export const TOOLS: ToolDefinition[] = [pinterestTheme, t1Tracker, taskNamer];
 
 export function getTool(id: string): ToolDefinition | undefined {
 	return TOOLS.find((tool) => tool.id === id);

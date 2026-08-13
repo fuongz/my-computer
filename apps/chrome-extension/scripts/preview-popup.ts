@@ -294,6 +294,20 @@ async function main(browser: Cdp) {
     source: `globalThis.isBordered = (el) => {
       const s = getComputedStyle(el);
       return s.borderTopWidth !== '0px' && !s.borderTopColor.startsWith('rgba(0, 0, 0, 0');
+    };
+    /*
+     * Whether an element carries a shadow you can SEE. Not the same as
+     * boxShadow !== 'none': Tailwind v4 compiles \`shadow-none\` to four fully
+     * transparent layers rather than the keyword, so a flat surface reads as
+     * "rgba(0, 0, 0, 0) 0px 0px 0px 0px, …" and a keyword test calls it raised.
+     */
+    globalThis.isRaised = (el) => {
+      const value = getComputedStyle(el).boxShadow;
+      if (!value || value === 'none') return false;
+      return (value.match(/rgba?\\([^)]*\\)/g) ?? []).some((color) => {
+        const parts = color.replace(/^rgba?\\(|\\)$/g, '').split(',').map(Number);
+        return parts.length < 4 || parts[3] !== 0;
+      });
     };`,
   })
   await page.send('Page.navigate', { url: `http://127.0.0.1:${HTTP_PORT}/index.html` })
@@ -302,15 +316,19 @@ async function main(browser: Cdp) {
   console.log('\ndashboard')
 
   const cards = await page.evaluate<number>('document.querySelectorAll(".tool-card").length')
-  ok('renders one card per registered tool', cards === 2, `${cards} card(s)`)
+  ok('renders one card per registered tool', cards === 3, `${cards} card(s)`)
 
   const names = await page.evaluate<string>(
     '[...document.querySelectorAll(".menu-title")].map(n => n.textContent).join(",")'
   )
-  ok('cards name the tools', names === 'Pinterest Dark/Light,T1 Esports Tracker', names)
+  ok(
+    'cards name the tools',
+    names === 'Pinterest Dark/Light,T1 Esports Tracker,Task Name Translator',
+    names
+  )
 
   const summary = await page.evaluate<string>('document.getElementById("summary").textContent')
-  ok('header summarises active tools', summary === '1 of 2 tools active', JSON.stringify(summary))
+  ok('header summarises active tools', summary === '1 of 3 tools active', JSON.stringify(summary))
 
   const defaultOn = await page.evaluate<boolean>(
     'document.querySelector(".tool-card").dataset.enabled === "true"'
@@ -341,14 +359,14 @@ async function main(browser: Cdp) {
     `(() => {
        const box = document.querySelector('#tool-list .menu');
        const rows = [...document.querySelectorAll('.tool-card')];
-       const lifted = rows.filter(r => getComputedStyle(r).boxShadow !== 'none').length;
-       return (getComputedStyle(box).boxShadow === 'none' ? 'flat' : 'raised') +
+       const lifted = rows.filter(isRaised).length;
+       return (isRaised(box) ? 'raised' : 'flat') +
               ' container, ' + rows.length + ' rows, ' + lifted + ' lifted';
      })()`
   )
   ok(
     'a flat grid holds elevated tool cards',
-    elevated === 'flat container, 2 rows, 2 lifted',
+    elevated === 'flat container, 3 rows, 3 lifted',
     elevated
   )
 
@@ -376,7 +394,7 @@ async function main(browser: Cdp) {
   await sleep(200)
 
   const offSummary = await page.evaluate<string>('document.getElementById("summary").textContent')
-  ok('switching off updates the header', offSummary === '0 of 2 tools active', offSummary)
+  ok('switching off updates the header', offSummary === '0 of 3 tools active', offSummary)
 
   const written = await page.evaluate<any>('globalThis.__store["fz.tools.v1"]')
   ok(
@@ -393,14 +411,13 @@ async function main(browser: Cdp) {
 
   console.log('\ndetail view')
 
-  // Pinterest has no settings and no panel of its own now — it follows the
-  // extension's appearance — so there is nothing behind its card, and the
-  // registry stops making it openable.
+  // Pinterest follows the extension's appearance, while T1 and Task Name
+  // Translator each expose controls in their detail views.
   const openable = await page.evaluate<string>(
     `[...document.querySelectorAll('.tool-card')]
        .map(c => c.querySelector('button.menu-open') ? 'open' : 'flat').join(',')`
   )
-  ok('a tool with nothing behind it is not openable', openable === 'flat,open', openable)
+  ok('tools with controls are openable', openable === 'flat,open,open', openable)
 
   await page.evaluate('document.querySelector("button.menu-open").click()')
   await sleep(200)
@@ -438,6 +455,31 @@ async function main(browser: Cdp) {
     '!document.getElementById("view-dashboard").hidden && document.getElementById("view-detail").hidden'
   )
   ok('back returns to the dashboard', backShown)
+
+  await page.evaluate(
+    'document.querySelector(`[data-row-id="task-namer"] button.menu-open`).click()',
+  )
+  await sleep(200)
+
+  const selectionPopup = await page.evaluate<string>(
+    `(() => {
+       const inputs = [...document.querySelectorAll('#detail-body input')];
+       return inputs.length + '/' + inputs.find(input => input.value === 'on')?.checked;
+     })()`,
+  )
+  ok('Task Name Translator defaults its selection popup to on', selectionPopup === '2/true', selectionPopup)
+
+  await page.evaluate('document.querySelector(`#detail-body input[value="off"]`).click()')
+  await sleep(200)
+  const popupSetting = await page.evaluate<string>(
+    'globalThis.__store["fz.tools.v1"]["task-namer"].settings["selection-popup"]',
+  )
+  ok('turning it off persists the selection-popup setting', popupSetting === 'off', popupSetting)
+
+  await screenshot(page, 'popup-task-namer-detail')
+
+  await page.evaluate('document.getElementById("back").click()')
+  await sleep(200)
 
   // --- appearance ----------------------------------------------------------
 
@@ -836,7 +878,11 @@ const chrome = spawn(CHROME, [
   '--no-default-browser-check',
   `--remote-debugging-port=${CDP_PORT}`,
   `--user-data-dir=${PROFILE}`,
-  '--window-size=380,620',
+  // Wide enough for the popup Chrome actually draws. The window sizes itself to
+  // the document, so at 780px the dashboard's two-column grid applies; the 380
+  // this used to be predates the popup being widened, and left the grid under
+  // its own `max-width: 560px` single-column fallback in every run.
+  '--window-size=800,700',
   'about:blank',
 ])
 chrome.on('error', (err) => {

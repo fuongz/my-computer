@@ -95,3 +95,10 @@ Left for the user (their call, stated in the review's V1):
   `PROVIDER_ENCRYPTION_KEY` must be IDENTICAL in both Workers.
 - Deploy `apps/api`, then paste its URL and a fresh `fz_` key into the extension's
   Options page.
+
+## Task Name Translator — selection popup setting
+
+1. [x] Inspect the Task Name Translator popup, overlay, and persisted settings patterns.
+2. [x] Add a second settings screen with a toggle for showing the popup on text selection.
+3. [x] Persist the preference and make the content overlay respect it.
+4. [x] Run the relevant typecheck/build and verify the changed flow.
