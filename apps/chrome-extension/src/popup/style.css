@@ -602,3 +602,90 @@
 		stroke-width: 2;
 	}
 }
+
+/*
+ * Dò vé số: the three things a winning result does that a utility cannot say.
+ *
+ * A verdict arrives rather than appearing, confetti falls behind the winning
+ * one, and the clover on a losing one breathes — the panel's one bit of
+ * warmth, and the reason it is worth spending keyframes on at all. Each piece
+ * of confetti gets its colour, offset and delay from panel.ts; what is here is
+ * the motion they share.
+ */
+@layer components {
+	.xs-pop {
+		animation: xs-pop 0.42s var(--btn-ease) both;
+	}
+
+	@keyframes xs-pop {
+		from {
+			opacity: 0;
+			transform: scale(0.94) translateY(6px);
+		}
+
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	.xs-confetti-piece {
+		position: absolute;
+		top: -14px;
+		width: 7px;
+		height: 11px;
+		border-radius: 2px;
+		opacity: 0;
+		animation: xs-fall 1.6s var(--btn-ease) forwards;
+	}
+
+	/*
+	 * The piece's own rotation is set inline, so this rotates from wherever it
+	 * was placed — sixteen pieces falling in lockstep read as a curtain rather
+	 * than as confetti.
+	 */
+	@keyframes xs-fall {
+		0% {
+			opacity: 0;
+			translate: 0 0;
+			rotate: 0deg;
+		}
+
+		12% {
+			opacity: 1;
+		}
+
+		100% {
+			opacity: 0;
+			translate: 0 190px;
+			rotate: 460deg;
+		}
+	}
+
+	.xs-bob {
+		animation: xs-bob 2.8s ease-in-out infinite;
+	}
+
+	@keyframes xs-bob {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+
+		50% {
+			transform: translateY(-4px);
+		}
+	}
+
+	/* The result still has to read; only the motion goes. */
+	@media (prefers-reduced-motion: reduce) {
+		.xs-pop,
+		.xs-bob {
+			animation: none;
+		}
+
+		.xs-confetti {
+			display: none;
+		}
+	}
+}

@@ -257,6 +257,49 @@ const FETCH_SHIM = `
       } ] },
     ] } ] } };
 
+    /* --- xskt.com.vn --- */
+
+    /*
+     * Hồ Chí Minh's real draw of 15/08/2026, reproduced row for row — the draw
+     * every rule in prizes.ts was checked against, so it is the one the
+     * scoring assertions are written from.
+     *
+     * The đầu/đuôi columns on the right are kept because they are digits too:
+     * they are what the parser has to NOT read, and a fixture without them
+     * would pass a parser that swept up the whole row.
+     */
+    const XS_ROWS = [
+      ['Giải tám', 'G8', '<em>31</em>', '0', '1'],
+      ['Giải bảy', 'G7', '<p>729</p>', '1', '6'],
+      ['Giải sáu', 'G6', '<p>8531 0599 7531</p>', '2', '9, 9'],
+      ['Giải năm', 'G5', '<p>7001</p>', '3', '0, 1, 1, 1, 9'],
+      ['Giải tư', 'G4', '<p>44351 18954 65673<br>56983 75239 67899 82116</p>', '4', ''],
+      ['Giải ba', 'G3', '<p>55129 28930</p>', '6', '4'],
+      ['Giải nhì', 'G2', '<p>75464</p>', '7', '2, 3'],
+      ['Giải nhất', 'G1', '<p>55672</p>', '8', '3, 9'],
+      ['Giải ĐB', 'ĐB', '<em>040589</em>', '9', '9, 9'],
+    ];
+
+    const xsTable = (slug, stamp) =>
+      '<table class="result" id="HCM0"><tr><th colspan="2"><b class=h3>XSMN&gt; Thứ 7&gt; XSHCM</b>' +
+      '<i class="dockq" data-url="' + slug + '/' + stamp + '"></i></th><th>ĐẦU</th><th>ĐUÔI</th></tr>' +
+      XS_ROWS.map(([title, label, numbers, head, tail]) =>
+        '<tr><td title="' + title + '">' + label + '</td><td>' + numbers +
+        '</td><td>' + head + '</td><td>' + tail + '</td></tr>').join('') +
+      '</table>';
+
+    const xsPage = (body) =>
+      '<!doctype html><html><head><title>XSKT</title></head><body>' + body + '</body></html>';
+
+    /*
+     * What the site answers with when it has nothing for the date asked for:
+     * the same day in earlier years, under a heading that still reads the date
+     * you asked for. Only the data-url stamps give it away.
+     */
+    const XS_OTHER_YEARS = xsPage(
+      xsTable('tp-ho-chi-minh', '10-08-2025') + xsTable('tp-ho-chi-minh', '10-08-2014')
+    );
+
     /* --- the router --- */
 
     globalThis.__fetchCalls = [];
@@ -266,10 +309,22 @@ const FETCH_SHIM = `
       status: 200, headers: { 'content-type': 'application/json' },
     });
 
+    const html = (body) => new Response(body, {
+      status: 200, headers: { 'content-type': 'text/html;charset=UTF-8' },
+    });
+
     globalThis.fetch = async (url) => {
       const href = String(url);
       globalThis.__fetchCalls.push(href);
       if (globalThis.__fetchMode === 'error') return new Response('', { status: 503 });
+
+      if (href.includes('xskt.com.vn')) {
+        return html(
+          href.includes('/ngay-15-8-2026')
+            ? xsPage(xsTable('tp-ho-chi-minh', '15-08-2026'))
+            : XS_OTHER_YEARS
+        );
+      }
 
       if (href.includes('getLeagues')) return json(LEAGUES);
       if (href.includes('getTournamentsForLeague')) {
@@ -316,19 +371,19 @@ async function main(browser: Cdp) {
   console.log('\ndashboard')
 
   const cards = await page.evaluate<number>('document.querySelectorAll(".tool-card").length')
-  ok('renders one card per registered tool', cards === 3, `${cards} card(s)`)
+  ok('renders one card per registered tool', cards === 4, `${cards} card(s)`)
 
   const names = await page.evaluate<string>(
     '[...document.querySelectorAll(".menu-title")].map(n => n.textContent).join(",")'
   )
   ok(
     'cards name the tools',
-    names === 'Pinterest Dark/Light,T1 Esports Tracker,Task Name Translator',
+    names === 'Pinterest Dark/Light,T1 Esports Tracker,Task Name Translator,Dò vé số',
     names
   )
 
   const summary = await page.evaluate<string>('document.getElementById("summary").textContent')
-  ok('header summarises active tools', summary === '1 of 3 tools active', JSON.stringify(summary))
+  ok('header summarises active tools', summary === '1 of 4 tools active', JSON.stringify(summary))
 
   const defaultOn = await page.evaluate<boolean>(
     'document.querySelector(".tool-card").dataset.enabled === "true"'
@@ -366,7 +421,7 @@ async function main(browser: Cdp) {
   )
   ok(
     'a flat grid holds elevated tool cards',
-    elevated === 'flat container, 3 rows, 3 lifted',
+    elevated === 'flat container, 4 rows, 4 lifted',
     elevated
   )
 
@@ -394,7 +449,7 @@ async function main(browser: Cdp) {
   await sleep(200)
 
   const offSummary = await page.evaluate<string>('document.getElementById("summary").textContent')
-  ok('switching off updates the header', offSummary === '0 of 3 tools active', offSummary)
+  ok('switching off updates the header', offSummary === '0 of 4 tools active', offSummary)
 
   const written = await page.evaluate<any>('globalThis.__store["fz.tools.v1"]')
   ok(
@@ -417,7 +472,7 @@ async function main(browser: Cdp) {
     `[...document.querySelectorAll('.tool-card')]
        .map(c => c.querySelector('button.menu-open') ? 'open' : 'flat').join(',')`
   )
-  ok('tools with controls are openable', openable === 'flat,open,open', openable)
+  ok('tools with controls are openable', openable === 'flat,open,open,open', openable)
 
   await page.evaluate('document.querySelector("button.menu-open").click()')
   await sleep(200)
@@ -846,6 +901,365 @@ async function main(browser: Cdp) {
   )
 
   await screenshot(page, 'popup-t1-error')
+
+  // --- the Dò vé số panel -------------------------------------------------
+
+  console.log('\nDò vé số panel')
+
+  await page.evaluate('globalThis.__fetchMode = "ok"')
+  await page.evaluate('document.getElementById("back").click()')
+  await sleep(200)
+  await page.evaluate('document.querySelector(`[data-row-id="lottery"] button.menu-open`).click()')
+  await sleep(250)
+
+  const lotteryOff = await page.evaluate<string>(
+    'document.querySelector(".xs-placeholder")?.textContent'
+  )
+  ok(
+    'an off tool explains itself',
+    lotteryOff === 'Bật tool này để dò vé số.',
+    JSON.stringify(lotteryOff)
+  )
+
+  await page.evaluate('document.getElementById("detail-switch-lottery").click()')
+  await sleep(250)
+
+  const provinces = await page.evaluate<string>(
+    `(() => {
+       document.getElementById('xs-province').click();
+       const groups = [...document.querySelectorAll('.xs-picker-group')].map(g => g.textContent);
+       return document.querySelectorAll('.xs-option').length + ' in ' + groups.join('+');
+     })()`
+  )
+  ok(
+    'offers every southern and central province, by region',
+    provinces === '35 in Miền Nam+Miền Trung',
+    provinces
+  )
+
+  // A browser action's window is as tall as its document, so there is nothing
+  // above the trigger to open into: the list has to drop down and fit.
+  const placement = await page.evaluate<string>(
+    `(() => {
+       const list = document.querySelector('.xs-picker-popover').getBoundingClientRect();
+       const trigger = document.getElementById('xs-province').getBoundingClientRect();
+       return (list.top >= trigger.bottom ? 'below' : 'above') + ', ' +
+              (list.top >= 0 && list.bottom <= window.innerHeight ? 'in view' : 'clipped');
+     })()`
+  )
+  ok('the list drops down and stays inside the window', placement === 'below, in view', placement)
+
+  await screenshot(page, 'popup-lottery-picker')
+
+  // …and again in a window short enough that the trigger sits near the bottom,
+  // which is the shape a real browser action takes before a lookup has made
+  // the panel tall. This is the case that used to flip the list upwards, off
+  // the top of the popup.
+  // Escape rather than a click elsewhere: the popover closes on pointerdown,
+  // which element.click() does not fire.
+  const closePicker = `document.querySelector('.xs-picker-search')
+    .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`
+  const openPicker = `(() => {
+    const trigger = document.getElementById('xs-province');
+    if (trigger.getAttribute('aria-expanded') !== 'true') trigger.click();
+  })()`
+
+  await page.evaluate(closePicker)
+  await page.send('Emulation.setDeviceMetricsOverride', {
+    width: 780,
+    height: 300,
+    deviceScaleFactor: 1,
+    mobile: false,
+  })
+  await sleep(200)
+
+  const cramped = await page.evaluate<string>(
+    `(() => {
+       ${openPicker};
+       const list = document.querySelector('.xs-picker-popover').getBoundingClientRect();
+       const trigger = document.getElementById('xs-province').getBoundingClientRect();
+       return (list.top >= trigger.bottom ? 'below' : 'above') + ', ' +
+              (list.bottom <= window.innerHeight ? 'in view' : 'clipped') + ', ' +
+              (list.height >= 90 ? 'usable' : Math.round(list.height) + 'px');
+     })()`
+  )
+  ok('a short popup still drops down, in view and usable', cramped === 'below, in view, usable', cramped)
+
+  await page.evaluate(closePicker)
+  await page.send('Emulation.clearDeviceMetricsOverride')
+  await sleep(200)
+  await page.evaluate(openPicker)
+  await sleep(100)
+
+  /** Type into the open picker and read back what survives the filter. */
+  const search = (text: string) => `(() => {
+    const input = document.querySelector('.xs-picker-search');
+    input.value = ${JSON.stringify(text)};
+    input.dispatchEvent(new Event('input'));
+    return [...document.querySelectorAll('.xs-option')].map(o => o.textContent).join(',');
+  })()`
+
+  const byName = await page.evaluate<string>(search('hau giang'))
+  ok('search ignores the diacritics nobody types', byName === 'Hậu Giang', byName)
+
+  const runOn = await page.evaluate<string>(search('haugiang'))
+  ok('…and the spaces between the words', runOn === 'Hậu Giang', runOn)
+
+  const bySlug = await page.evaluate<string>(search('xshg'))
+  ok('and finds a province by the site’s own code', bySlug === 'Hậu Giang', bySlug)
+
+  const initials = await page.evaluate<string>(search('hcm'))
+  ok('so HCM finds Hồ Chí Minh', initials === 'Hồ Chí Minh', initials)
+
+  // Tiền Giang draws on Sundays only, so choosing it has to move the date.
+  const chosen = await page.evaluate<string>(
+    `(() => {
+       const input = document.querySelector('.xs-picker-search');
+       input.value = 'tien giang';
+       input.dispatchEvent(new Event('input'));
+       input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+       const day = new Date(document.getElementById('xs-date').value + 'T00:00:00').getDay();
+       return document.querySelector('.xs-picker-value').textContent + ' / ' +
+              document.getElementById('xs-province').dataset.value + ' / day ' + day;
+     })()`
+  )
+  ok(
+    'Enter picks the match, and the date moves to a day it draws',
+    chosen === 'Tiền Giang / xstg / day 0',
+    chosen
+  )
+
+  /** Set the three fields the way a person would, and read the note back. */
+  const fill = (slug: string, date: string, ticket: string) => `(() => {
+    const trigger = document.getElementById('xs-province');
+    if (trigger.dataset.value !== ${JSON.stringify(slug)}) {
+      trigger.click();
+      document.querySelector('.xs-option[data-value="' + ${JSON.stringify(slug)} + '"]')
+        .dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    }
+    const day = document.getElementById('xs-date');
+    const number = document.getElementById('xs-ticket');
+    day.value = ${JSON.stringify(date)};
+    day.dispatchEvent(new Event('change'));
+    number.value = ${JSON.stringify(ticket)};
+    number.dispatchEvent(new Event('input'));
+    return document.querySelector('.xs-note').textContent + ' | ' +
+           (document.querySelector('.xs-submit').disabled ? 'blocked' : 'ready');
+  })()`
+
+  const xsCalls = () =>
+    page.evaluate<number>(
+      `globalThis.__fetchCalls.filter(c => c.includes('xskt.com.vn')).length`
+    )
+
+  ok('an off tool makes no requests', (await xsCalls()) === 0, `${await xsCalls()} request(s)`)
+
+  // 16/08/2026 is a Sunday, and Hồ Chí Minh draws on Mondays and Saturdays.
+  // The table in provinces.ts is what answers this, so it costs no request.
+  const wrongDay = await page.evaluate<string>(fill('xshcm-xstp', '2026-08-16', '004731'))
+  ok(
+    'a date the province does not draw is refused before any request',
+    wrongDay ===
+      'Hồ Chí Minh chỉ xổ Thứ Hai và Thứ Bảy — ngày bạn chọn là Chủ Nhật. | blocked',
+    wrongDay
+  )
+  ok('and still nothing goes out', (await xsCalls()) === 0, `${await xsCalls()} request(s)`)
+
+  const shortTicket = await page.evaluate<string>(fill('xshcm-xstp', '2026-08-15', '0047'))
+  ok(
+    'a half-typed ticket asks for the rest',
+    shortTicket === 'Nhập 6 chữ số trên vé để dò. | blocked',
+    shortTicket
+  )
+
+  const ready = await page.evaluate<string>(fill('xshcm-xstp', '2026-08-15', '004731'))
+  ok(
+    'a complete form says what it is about to look up',
+    ready === 'Hồ Chí Minh · Thứ Bảy 15/08/2026 | ready',
+    ready
+  )
+
+  await page.evaluate('document.querySelector(".xs-submit").click()')
+  await sleep(600)
+
+  const url = await page.evaluate<string>(
+    `globalThis.__fetchCalls.filter(c => c.includes('xskt.com.vn')).at(-1)`
+  )
+  ok(
+    'asks xskt.com.vn for that province and day',
+    url === 'https://xskt.com.vn/xshcm-xstp/ngay-15-8-2026',
+    url
+  )
+
+  const won = await page.evaluate<string>(
+    `[
+       document.querySelector('.xs-headline')?.textContent,
+       document.querySelector('.xs-verdict-line')?.textContent,
+       document.querySelector('.xs-total')?.textContent,
+     ].join(' / ')`
+  )
+  ok(
+    'a winning ticket is congratulated, by prize and amount',
+    won === 'XIN CHÚC MỪNG! / Vé số của bạn đã trúng Giải Tám! / 100.000 ₫',
+    won
+  )
+
+  // The last two digits are what took giải tám, and the 31 in the G8 row is
+  // what they took it from — both marked, so the answer shows its working.
+  const marks = await page.evaluate<string>(
+    `(() => {
+       const digits = [...document.querySelectorAll('.xs-digit')]
+         .map(d => (d.classList.contains('xs-digit-hit') ? '[' + d.textContent + ']' : d.textContent))
+         .join('');
+       const hit = [...document.querySelectorAll('.xs-chip-hit')].map(c => c.textContent).join(',');
+       return digits + ' from ' + hit;
+     })()`
+  )
+  ok('marks the winning tail and the number it matched', marks === '0047[3][1] from 31', marks)
+
+  const drawn = await page.evaluate<string>(
+    `[...document.querySelectorAll('.xs-draw-row')].map(r =>
+       r.dataset.prize + ':' + [...r.querySelectorAll('.xs-chip')].map(c => c.textContent).join(' ')
+     ).join(' | ')`
+  )
+  ok(
+    'and prints the whole draw underneath',
+    drawn ===
+      'db:040589 | g1:55672 | g2:75464 | g3:55129 28930 | ' +
+      'g4:44351 18954 65673 56983 75239 67899 82116 | g5:7001 | ' +
+      'g6:8531 0599 7531 | g7:729 | g8:31',
+    drawn
+  )
+
+  await screenshot(page, 'popup-lottery-win')
+
+  // The draw itself runs past the fold, and it is the half with the ruled
+  // cells and the two emphasised rows — worth its own frame.
+  const emphasis = await page.evaluate<string>(
+    `(() => {
+       document.querySelector('.xs-draw').scrollIntoView({ block: 'end' });
+       return [...document.querySelectorAll('.xs-draw-row')]
+         .filter(r => r.querySelector('.xs-chip-big'))
+         .map(r => r.dataset.prize).join(',');
+     })()`
+  )
+  ok('sets the đặc biệt and giải tám apart', emphasis === 'db,g8', emphasis)
+
+  await sleep(250)
+  await screenshot(page, 'popup-lottery-table')
+
+  // Prizes stack: 8531 takes giải sáu and 31 takes giải tám off the same
+  // ticket, which is the case xskt.com.vn itself answers with 500,000.
+  await page.evaluate(fill('xshcm-xstp', '2026-08-15', '048531'))
+  await page.evaluate('document.querySelector(".xs-submit").click()')
+  await sleep(500)
+
+  const stacked = await page.evaluate<string>(
+    `document.querySelector('.xs-total')?.textContent + ' = ' +
+     [...document.querySelectorAll('.xs-hit')].map(h => h.textContent).join(' + ')`
+  )
+  ok(
+    'two prizes on one ticket are added up and both listed',
+    stacked === '500.000 ₫ = Giải Sáu400.000 + Giải Tám100.000',
+    stacked
+  )
+  ok(
+    'and a second lookup of the same draw is served from the cache',
+    (await xsCalls()) === 1,
+    `${await xsCalls()} request(s)`
+  )
+
+  await screenshot(page, 'popup-lottery-stacked')
+
+  // One digit off the đặc biệt, and which digit it is decides the prize.
+  await page.evaluate(fill('xshcm-xstp', '2026-08-15', '140589'))
+  await page.evaluate('document.querySelector(".xs-submit").click()')
+  await sleep(400)
+
+  const consolation = await page.evaluate<string>(
+    `document.querySelector('.xs-verdict-line')?.textContent + ' / ' +
+     document.querySelector('.xs-total')?.textContent + ' / ' +
+     (document.querySelector('.xs-chip-near') ? 'đặc biệt marked' : 'unmarked')`
+  )
+  ok(
+    'a wrong first digit is giải phụ đặc biệt, and says so against the đặc biệt',
+    consolation ===
+      'Vé số của bạn đã trúng Giải Phụ Đặc Biệt! / 50.000.000 ₫ / đặc biệt marked',
+    consolation
+  )
+
+  await page.evaluate(fill('xshcm-xstp', '2026-08-15', '040588'))
+  await page.evaluate('document.querySelector(".xs-submit").click()')
+  await sleep(400)
+
+  const encouragement = await page.evaluate<string>(
+    `document.querySelector('.xs-verdict-line')?.textContent + ' / ' +
+     document.querySelector('.xs-total')?.textContent`
+  )
+  ok(
+    'a wrong last digit is giải khuyến khích',
+    encouragement === 'Vé số của bạn đã trúng Giải Khuyến Khích! / 6.000.000 ₫',
+    encouragement
+  )
+
+  // The ticket from the brief, which wins nothing.
+  await page.evaluate(fill('xshcm-xstp', '2026-08-15', '004753'))
+  await page.evaluate('document.querySelector(".xs-submit").click()')
+  await sleep(500)
+
+  const missed = await page.evaluate<string>(
+    `(document.querySelector('.xs-verdict-missed') ? 'gentle' : 'loud') + ' / ' +
+     document.querySelector('.xs-headline')?.textContent + ' / ' +
+     document.querySelector('.xs-verdict-line')?.textContent + ' / ' +
+     document.querySelectorAll('.xs-chip-hit').length + ' marked'`
+  )
+  ok(
+    'a losing ticket gets the gentle card and nothing marked',
+    missed ===
+      'gentle / Rất tiếc :( / Vé số của bạn không trúng thưởng, chúc bạn may mắn lần sau! / 0 marked',
+    missed
+  )
+
+  await screenshot(page, 'popup-lottery-missed')
+
+  await page.evaluate(`document.querySelector('[data-value="dark"] input').click()`)
+  await sleep(400)
+  await screenshot(page, 'popup-lottery-dark')
+  await page.evaluate(`document.querySelector('[data-value="system"] input').click()`)
+  await sleep(200)
+
+  // A day the province did draw, but that the site has nothing for yet — it
+  // answers with the same date in other years, and that must not read as a
+  // result. 10/08/2026 is a Monday, which Hồ Chí Minh does draw on.
+  await page.evaluate(fill('xshcm-xstp', '2026-08-10', '004731'))
+  await page.evaluate('document.querySelector(".xs-submit").click()')
+  await sleep(500)
+
+  const noDraw = await page.evaluate<string>(
+    'document.querySelector(".xs-placeholder")?.textContent'
+  )
+  ok(
+    'another year’s table is not mistaken for a result',
+    noDraw ===
+      'Chưa có kết quả Hồ Chí Minh ngày 10/08/2026. Kết quả thường có sau 16h30.',
+    JSON.stringify(noDraw)
+  )
+
+  const cachedDraws = await page.evaluate<string>(
+    `Object.keys(globalThis.__local['fz.xs.draws.v1'] ?? {}).join(',')`
+  )
+  ok(
+    'only the draw that exists is cached',
+    cachedDraws === 'xshcm-xstp|2026-08-15',
+    cachedDraws || '(nothing cached)'
+  )
+
+  const offSite = await page.evaluate<string>(
+    `globalThis.__fetchCalls
+       .filter(c => !c.includes('lolesports.com'))
+       .filter(c => !c.startsWith('https://xskt.com.vn/')).join(',')`
+  )
+  ok('and the tool talks to nowhere else', offSite === '', offSite)
 
   await browser.send('Target.closeTarget', { targetId })
 }

@@ -8,6 +8,15 @@ write here are exactly what the board renders.
 Follow these conventions for code-related tasks, while always respecting the
 user's latest explicit instructions.
 
+## Task-card creation — Lanework MCP only
+
+When an agent creates a task/review card, it **must** call the configured
+`lanework_mcp` tool `create_review` (or the MCP `handoff` flow for a successor
+card). Never create or write a file under `.agents/reviews/` directly, and do not
+use a raw filesystem writer as a fallback. If the Lanework MCP is unavailable,
+report the blocker and ask the user to restore it; do not create the card by another
+route.
+
 ## Where artifacts go
 
 All agent working files live under `.agents/`. Use **`YYYY-MM-DD`** for every

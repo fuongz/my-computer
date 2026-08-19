@@ -1,31 +1,52 @@
-# fuongz's Extensions
+# fuongz's tools
 
-A small toolbox of browser tweaks. Each one is a **tool** with its own on/off
-switch and its own settings, all managed from a single popup dashboard.
+A small toolbox, in two shapes. Most of it is a **Chrome extension**, where each
+tool has its own on/off switch and its own settings, all managed from a single
+popup dashboard. The rest is a **web app**, for the tools that want more room
+than a 340px browser action gives them.
 
 ## Workspace layout
 
-This repository is a Bun monorepo with one application in it. Applications live
+This repository is a Bun monorepo with two applications in it. Applications live
 in `apps/`; reusable libraries, UI, and other shared code belong in `packages/`.
 
 ```
 apps/
-  chrome-extension/  the Chrome extension — this is the whole product
+  chrome-extension/  the extension and its popup dashboard
+  webapp/            the web app — TanStack Start on Cloudflare Workers
 packages/
   (empty; shared code goes here when a second consumer exists)
 ```
 
-| Tool                       | What it does                                                                             | Runs on          |
-| -------------------------- | ---------------------------------------------------------------------------------------- | ---------------- |
-| **Pinterest Dark/Light**   | Repaints pinterest.com to match the extension's appearance, with no white flash on load. | `pinterest.com`  |
-| **T1 Esports Tracker**     | T1's next matches, recent results, and each tournament's group stage or bracket.         | the popup itself |
-| **Task Name Translator**   | Rewrites selected text — Vietnamese or English — as one English task title.               | any page, on right-click |
+Nothing is shared between the two yet, and that is deliberate. They overlap in
+taste — the same registry-is-the-source-of-truth idea, the same Hugeicons, the
+same black-and-white palette — but not in code, and a `packages/ui` extracted
+before a second consumer exists is a package shaped by exactly one caller.
 
-The extension talks to three servers and no more: pinterest.com (nothing, it
-only restyles it), lolesports.com for the schedule, and OpenRouter for the task
-titles. There is no backend of ours in between — the OpenRouter call is billed
-to a key you paste in Settings and is made only when you pick the item from the
-right-click menu.
+### The extension's tools
+
+| Tool                     | What it does                                                                             | Runs on                  |
+| ------------------------ | ---------------------------------------------------------------------------------------- | ------------------------ |
+| **Pinterest Dark/Light** | Repaints pinterest.com to match the extension's appearance, with no white flash on load. | `pinterest.com`          |
+| **T1 Esports Tracker**   | T1's next matches, recent results, and each tournament's group stage or bracket.         | the popup itself         |
+| **Task Name Translator** | Rewrites selected text — Vietnamese or English — as one English task title.              | any page, on right-click |
+| **Dò vé số**             | Checks a Vietnamese lottery ticket against one province's draw on one date.              | the popup itself         |
+
+The extension talks to four servers and no more: pinterest.com (nothing, it only
+restyles it), lolesports.com for the schedule, OpenRouter for the task titles,
+and xskt.com.vn for the lottery results. There is no backend of ours in between
+— the OpenRouter call is billed to a key you paste in Settings and is made only
+when you pick the item from the right-click menu.
+
+### The web app's tools
+
+| Tool                              | What it does                                                                  |
+| --------------------------------- | ----------------------------------------------------------------------------- |
+| **Bộ sưu tập Mobile Legends**     | Marks which of 133 heroes and 1,007 skins you own, and shows what is missing.  |
+
+The web app has no backend either, and that is the point: every tool in it runs
+in the browser and keeps its state in `localStorage`. The Worker only serves the
+app, which is why `apps/webapp/wrangler.jsonc` declares no bindings at all.
 
 ## Install (unpacked)
 
@@ -46,6 +67,17 @@ Then in Chrome:
 
 `bun run dev` rebuilds on save. Content-script changes need a reload of the
 extension _and_ of the tab; popup changes just need the popup reopened.
+
+## Running the web app
+
+```bash
+bun run dev:webapp     # vite dev on :5174
+bun run deploy:webapp  # vite build, then wrangler deploy
+```
+
+`bun run dev` is the extension, not this — there are two apps and no sensible
+default, so each is named explicitly. Running both at once is two terminals, not
+one command.
 
 ## Task Name Translator
 
@@ -113,7 +145,90 @@ narrow by construction: it holds no API key, makes no network request of its
 own, and with the tool switched off it draws nothing and reads nothing. The key
 lives in the service worker and stays there.
 
-## How it's put together
+## Dò vé số
+
+Switch the tool on, pick a province, pick a date, type the six digits. The panel
+answers with a celebratory card if the ticket won and a gentle one if it did not,
+over the full draw table with every matching digit highlighted.
+
+**Scoring happens here, not there.** `prizes.ts` takes the drawn numbers and the
+ticket and works out the result locally: a suffix match for giải tám up through
+giải nhất, an exact match for đặc biệt, phụ đặc biệt when only the first digit
+differs, khuyến khích when exactly one of the last five does, and the prizes
+summed when a ticket takes more than one. The site is asked for numbers, never
+for a verdict.
+
+**The province table is offline.** `provinces.ts` holds all 35 draw slots — 21
+southern, 14 central — as slug, name, region and weekday, so the panel can say
+*"Hậu Giang chỉ xổ Thứ Bảy"* without spending a request. Miền Bắc is deliberately
+absent: it draws once for the whole region on a different prize structure with
+five-digit tickets, so it needs its own parser and its own rules rather than
+another row.
+
+That offline table is also what makes the site survivable. **Asking xskt.com.vn
+for a date a province did not draw does not 404** — it answers with that
+province's same calendar day from some *other* year, which is a wrong result that
+looks exactly like a right one. So `api.ts` reads the date the returned table
+declares in its own `i.dockq[data-url]` and rejects anything that is not the date
+asked for, and the weekday check refuses to send the request in the first place.
+
+The site has no API, so this parses the result page's `table.result`. The HTML
+only ever reaches `DOMParser` — which runs no scripts, and whose document is
+never attached to the popup's — and the request goes out from the popup directly,
+because the extension page holds the `https://xskt.com.vn/*` permission and needs
+no worker in the middle.
+
+## The web app
+
+A dashboard shell plus one tool, served as a Cloudflare Worker. It exists because
+some tools want a grid of a thousand tiles, and a 340px browser action is the
+wrong shape for that.
+
+```
+apps/webapp/src/
+  routes/          __root, the dashboard index, and one route per tool
+  components/
+    shared/        the app shell (sidebar + app bar) and the theme toggle
+    ui/            vendored by the shadcn CLI — see biome.jsonc
+  tools/
+    registry.ts    THE list of tools — the sidebar and the dashboard both read it
+    mlbb/          the Mobile Legends collection tool
+      data/        heroes.json, skins.json, meta.json — baked at build time
+      store.ts     zustand + persist over localStorage
+  lib/theme.ts     the pre-paint theme script
+  styles/app.css   the token block
+scripts/
+  sync-mlbb-data.ts  rebuilds data/ from the Fandom wiki
+  download-art.ts    downloads every picture into public/mlbb/
+```
+
+**The dataset is baked, not fetched.** `bun run data:sync` reads
+`Module:Hero/data` and `Module:Skin/data` off the MLBB Fandom wiki, parses the Lua
+tables, and writes `src/tools/mlbb/data/` — 133 heroes and 1,007 skins as of the
+`syncedAt` in `meta.json`. It validates every role, lane, tier and availability
+against the unions in `types.ts` before writing, which is what makes the cast in
+`catalogue.ts` honest. A wiki that reorganises a module breaks the sync script,
+loudly, instead of shipping a half-parsed dataset.
+
+**The artwork is ours too.** `data:sync` finishes by calling `data:art`, which
+downloads one WebP per catalogue row into `public/mlbb/`, named after that row's
+id — `181.webp` is Layla's default skin. That naming rule is why `images.ts` needs
+no lookup table and the dataset needs no image field. It costs ~17 MB in the repo
+and buys a page that does not depend on Fandom staying up, does not leak a visit
+to them for every tile, and works offline in dev.
+
+**Ownership lives in `localStorage`**, under one key, written by zustand's
+`persist`. The page is server-rendered and `localStorage` does not exist there, so
+rehydration is deferred to an effect and the store carries a `hydrated` flag —
+rendering the grid against an empty store and then again against the real one is
+how you get a flash of "you own nothing". Export and import are plain JSON — a
+collection is yours, so backing it up is a file you hold, not a row we keep.
+
+`src/tools/registry.ts` is the same idea as the extension's `common/registry.ts`
+and for the same reason: adding a tool is that file plus its route, never a third
+place that has to be remembered.
+
+## How the extension is put together
 
 ```
 apps/chrome-extension/src/
@@ -148,6 +263,14 @@ apps/chrome-extension/src/
       naming.ts      the instruction, and cleaning up what comes back
       overlay.ts     the button over a selection, and the popover that answers
       overlay.css    its styles, which import none of the popup's
+    lottery/
+      definition.ts  the registry entry
+      constants.ts   the tool id, and nothing else — same reason as above
+      provinces.ts   the 35 draw slots and the weekday each one draws on
+      api.ts         the xskt.com.vn scrape, the date trap, and the per-draw cache
+      prizes.ts      scoring a ticket against a draw — all of it local
+      panel.ts       the form, the result card, and the draw table
+      picker.ts      the searchable province picker
   popup/
     index.ts       the dashboard; renders itself from the registry
     tool-ui.ts     tool id → its icon and its panel; the popup-side half
@@ -309,17 +432,38 @@ switched off should cost the pages it matches nothing at all.
 
 ## Scripts
 
-| Command                    | What it does                                                                        |
-| -------------------------- | ------------------------------------------------------------------------------------ |
-| `bun run build`            | Full build into `apps/chrome-extension/extension/dist/`, Tailwind included.         |
-| `bun run dev`              | Build, then rebuild content scripts, popup, worker and CSS on save.                 |
-| `bun run gate`             | `build` + `lint` + `typecheck`, in that order.                                      |
-| `bun run typecheck`        | `tsc --noEmit`.                                                                     |
-| `bun run lint`             | Biome.                                                                              |
-| `bun run icons`            | Rasterize `apps/chrome-extension/assets/icon.svg` into the three PNG sizes the manifest declares. |
-| `bun run preview`          | Screenshot real Pinterest pages with the theme applied, into `.preview/`.           |
-| `bun run preview:popup`    | Drive the built popup in headless Chrome and check the dashboard, into `.preview/`. |
-| `bun run preview:task-name`| Drive the task-name card through its three states over a hostile host page.          |
+Run every one of these from the repo root.
+
+| Command              | What it does                                                            |
+| -------------------- | ----------------------------------------------------------------------- |
+| `bun run gate`       | `build` + `lint` + `typecheck`, in that order. The one to run before a commit. |
+| `bun run build`      | Builds **both** apps — the extension into `apps/chrome-extension/extension/dist/`, Tailwind included, and the web app into `apps/webapp/dist/`. |
+| `bun run typecheck`  | `tsc --noEmit` in both apps.                                            |
+| `bun run lint`       | Biome's linter.                                                         |
+| `bun run check`      | Biome's linter **and** formatter. `gate` does not run this — the formatter is a separate pass. |
+| `bun run format`     | Biome's formatter, writing in place.                                    |
+
+### The extension
+
+| Command                     | What it does                                                           |
+| --------------------------- | ---------------------------------------------------------------------- |
+| `bun run dev`               | Build, then rebuild content scripts, popup, worker and CSS on save.    |
+| `bun run icons`             | Rasterize `apps/chrome-extension/assets/icon.svg` into the three PNG sizes the manifest declares. |
+| `bun run preview`           | Screenshot real Pinterest pages with the theme applied, into `.preview/`. |
+| `bun run preview:popup`     | Drive the built popup in headless Chrome and check the dashboard, into `.preview/`. |
+| `bun run preview:task-name` | Drive the task-name card through its three states over a hostile host page. |
+
+### The web app
+
+| Command                 | What it does                                                               |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `bun run dev:webapp`    | `vite dev` on port 5174.                                                   |
+| `bun run deploy:webapp` | `vite build`, then `wrangler deploy`.                                       |
+| `bun run data:sync`     | Rebuild `apps/webapp/src/tools/mlbb/data/` from the Fandom wiki, then download any new artwork. |
+
+`data:art` — the download half of `data:sync`, on its own — has no root alias on
+purpose; it is not something you run on its own often. Reach it with
+`bun run --filter @fuongz/webapp data:art`.
 
 ## Verifying
 
@@ -340,6 +484,13 @@ silent — it asserts zero requests), the schedule cards, the tournament list,
 a standings table, a bracket with its connectors, the widening and the way
 back, then a failed refresh over a stale cache and an outage with nothing
 cached.
+
+It drives **Dò vé số** the same way, over a stubbed xskt.com.vn: off and silent
+(zero requests asserted), the searchable province picker, the exact URL it asks
+for a given province and day, a winning ticket, the full draw table, a ticket
+that takes more than one prize, a miss, and the whole thing in dark mode. The
+stub matters more here than elsewhere — a real draw page changes daily, so live
+results would move under every assertion within a day of writing them.
 
 `bun run preview:task-name` serves a deliberately hostile host page — Comic
 Sans on `*`, uppercase on every `button`, a 20px root and a loud background —
@@ -413,6 +564,12 @@ Those need Load unpacked and a human.
 > browser, and only when you ask for it. It's off until you switch it on, and
 > while it's off it does nothing on any page.
 >
+> • **Dò vé số** — check a Vietnamese lottery ticket without squinting at a
+> results table. Pick the province and the draw date, type your six digits, and
+> it tells you what you won, with the matching numbers highlighted in the full
+> draw. Covers all 35 southern and central provinces. It's off until you switch
+> it on.
+>
 > One appearance control, in the toolbar popup: follow your system, or pin
 > everything to light or dark.
 >
@@ -432,3 +589,4 @@ Those need Load unpacked and a human.
 | `https://esports-api.lolesports.com/*` | T1's schedule. Only requested once the tracker is switched on.            |
 | `https://static.lolesports.com/*`      | Team logos in the tracker's list.                                         |
 | `https://openrouter.ai/*`              | The task-title call, on your own key, on the click that asks for it.      |
+| `https://xskt.com.vn/*`                | The lottery draw pages. Only requested once **Dò vé số** is switched on, and only for the province and date you ask for. |

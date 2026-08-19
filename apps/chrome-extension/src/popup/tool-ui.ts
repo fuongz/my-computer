@@ -14,9 +14,12 @@ import {
 	Calendar03Icon,
 	DarkModeIcon,
 	TaskEdit01Icon,
+	Ticket01Icon,
 } from "@hugeicons/core-free-icons";
 
 import type { IconData } from "../common/icons";
+import { LOTTERY_ID } from "../tools/lottery/constants";
+import { renderLotteryPanel } from "../tools/lottery/panel";
 import { PINTEREST_THEME_ID } from "../tools/pinterest-theme/constants";
 import { T1_TRACKER_ID } from "../tools/t1-tracker/constants";
 import { renderT1Panel } from "../tools/t1-tracker/panel";
@@ -27,6 +30,7 @@ const TOOL_ICONS: Record<string, IconData> = {
 	[PINTEREST_THEME_ID]: DarkModeIcon,
 	[T1_TRACKER_ID]: Calendar03Icon,
 	[TASK_NAMER_ID]: TaskEdit01Icon,
+	[LOTTERY_ID]: Ticket01Icon,
 };
 
 export function getToolIcon(toolId: string): IconData | undefined {
@@ -43,6 +47,7 @@ export type PanelRenderer = (host: HTMLElement, enabled: boolean) => void;
 
 const PANELS: Record<string, PanelRenderer> = {
 	[T1_TRACKER_ID]: renderT1Panel,
+	[LOTTERY_ID]: renderLotteryPanel,
 };
 
 export function getPanel(toolId: string): PanelRenderer | undefined {

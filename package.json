@@ -3,10 +3,17 @@
 	"type": "module",
 	"private": true,
 	"version": "1.0.0",
-	"workspaces": ["apps/*", "packages/*"],
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
 	"scripts": {
 		"build": "bun run --filter '*' build",
+		"//dev": "There are two apps and no sensible default, so `dev` names one and each has its own script. Running both at once is two terminals, not one command.",
 		"dev": "bun run --filter @fuongz/chrome-extension dev",
+		"dev:webapp": "bun run --filter @fuongz/webapp dev",
+		"deploy:webapp": "bun run --filter @fuongz/webapp deploy",
+		"data:sync": "bun run --filter @fuongz/webapp data:sync",
 		"typecheck": "bun run --filter '*' typecheck",
 		"lint": "biome lint",
 		"format": "biome format --write",

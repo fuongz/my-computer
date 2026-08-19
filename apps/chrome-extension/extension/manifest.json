@@ -8,7 +8,8 @@
     "https://*.pinterest.com/*",
     "https://esports-api.lolesports.com/*",
     "https://static.lolesports.com/*",
-    "https://openrouter.ai/*"
+    "https://openrouter.ai/*",
+    "https://xskt.com.vn/*"
   ],
   "icons": {
     "16": "assets/icons/icon-16.png",

@@ -1,0 +1,12 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "fuongz-webapp",
+	"main": "@tanstack/react-start/server-entry",
+	"compatibility_date": "2026-08-16",
+	"compatibility_flags": ["nodejs_compat"],
+	"observability": { "enabled": true }
+	// No bindings, and that is the point: every tool here runs in the browser and
+	// keeps its state in localStorage. The Worker only serves the app. The day a
+	// tool needs to remember something across devices, that is the day this file
+	// grows a D1 or a KV — not before.
+}

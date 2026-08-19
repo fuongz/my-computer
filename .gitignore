@@ -10,6 +10,10 @@ out
 # caches
 .cache
 *.tsbuildinfo
+# vite + TanStack Start scratch dirs (apps/webapp)
+.output
+.tanstack
+.vite
 
 # IntelliJ based IDEs
 .idea
@@ -21,6 +25,11 @@ out
 .preview
 
 .env
+
+# Local scratch for the MLBB collection: one-off reconciliation screenshots and the
+# seed exported from them. Personal collection data, ~11 MB of it, and reproducible
+# by exporting from the tool — so it stays on disk and out of history.
+apps/webapp/seeds
 
 # Leftover local Miniflare state from the removed API. Safe to delete by hand.
 .wrangler

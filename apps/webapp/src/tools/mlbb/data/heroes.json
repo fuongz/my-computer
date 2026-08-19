@@ -1,0 +1,2130 @@
+[
+	{
+		"id": "011",
+		"number": 1,
+		"name": "Miya",
+		"title": "Moonlight Archer",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Azrya Woodlands",
+		"releaseYear": 2016,
+		"price": {
+			"bp": 10800,
+			"ticket": 399
+		},
+		"icon": "8/8c/Hero011-icon.png",
+		"splash": "e/ed/Miya_%28Moonlight_Archer%29.jpg"
+	},
+	{
+		"id": "021",
+		"number": 2,
+		"name": "Balmond",
+		"title": "Bloody Beast",
+		"roles": ["Fighter"],
+		"lanes": ["Jungle", "EXP Lane"],
+		"region": "The Barren Lands",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 299,
+			"bp": 6500
+		},
+		"icon": "9/93/Hero021-icon.png",
+		"splash": "3/30/Balmond_%28Bloody_Beast%29.jpg"
+	},
+	{
+		"id": "031",
+		"number": 3,
+		"name": "Saber",
+		"title": "Wandering Sword",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle", "Roaming"],
+		"region": "Laboratory 1718",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 299,
+			"bp": 6500
+		},
+		"icon": "8/87/Hero031-icon.png",
+		"splash": "7/76/Saber_%28Wandering_Sword%29.jpg"
+	},
+	{
+		"id": "041",
+		"number": 4,
+		"name": "Alice",
+		"title": "Queen of Blood",
+		"roles": ["Tank", "Mage"],
+		"lanes": ["EXP Lane", "Jungle"],
+		"region": "Abyss",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 399,
+			"bp": 15000
+		},
+		"icon": "f/fd/Hero041-icon.png",
+		"splash": "e/e2/Alice_%28Queen_of_Blood%29.jpg"
+	},
+	{
+		"id": "051",
+		"number": 5,
+		"name": "Nana",
+		"title": "Sweet Leonin",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Azrya Woodlands",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 299,
+			"bp": 6500
+		},
+		"icon": "c/c3/Hero051-icon.png",
+		"splash": "9/9f/Nana_%28Sweet_Leonin%29.jpg"
+	},
+	{
+		"id": "061",
+		"number": 6,
+		"name": "Tigreal",
+		"title": "Warrior of Dawn",
+		"roles": ["Tank"],
+		"lanes": ["Roaming"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 299,
+			"bp": 6500
+		},
+		"icon": "f/f2/Hero061-icon.png",
+		"splash": "b/ba/Tigreal_%28Warrior_of_Dawn%29.jpg"
+	},
+	{
+		"id": "071",
+		"number": 7,
+		"name": "Alucard",
+		"title": "Demon Hunter",
+		"roles": ["Fighter", "Assassin"],
+		"lanes": ["Jungle"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2016,
+		"price": {
+			"bp": 15000,
+			"ticket": 399
+		},
+		"icon": "c/c7/Hero071-icon.png",
+		"splash": "b/b9/Alucard_%28Demon_Hunter%29.jpg"
+	},
+	{
+		"id": "081",
+		"number": 8,
+		"name": "Karina",
+		"title": "Shadow Blade",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle"],
+		"region": "Azrya Woodlands",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "8/8a/Hero081-icon.png",
+		"splash": "9/92/Karina_%28Shadow_Blade%29.jpg"
+	},
+	{
+		"id": "091",
+		"number": 9,
+		"name": "Akai",
+		"title": "Panda Warrior",
+		"roles": ["Tank"],
+		"lanes": ["Roaming"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2016,
+		"price": {
+			"bp": 32000,
+			"ticket": 599
+		},
+		"icon": "b/be/Hero091-icon.png",
+		"splash": "8/83/Akai_%28Panda_Warrior%29.jpg"
+	},
+	{
+		"id": "101",
+		"number": 10,
+		"name": "Franco",
+		"title": "Frozen Warrior",
+		"roles": ["Tank"],
+		"lanes": ["Roaming"],
+		"region": "Northern Vale",
+		"releaseYear": 2016,
+		"price": {
+			"bp": 32000,
+			"ticket": 749
+		},
+		"icon": "2/25/Hero101-icon.png",
+		"splash": "f/f8/Franco_%28Frozen_Warrior%29.jpg"
+	},
+	{
+		"id": "111",
+		"number": 11,
+		"name": "Bane",
+		"title": "Frozen King",
+		"roles": ["Fighter", "Mage"],
+		"lanes": ["Jungle", "EXP Lane"],
+		"region": "Northern Vale",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 299,
+			"bp": 6500
+		},
+		"icon": "e/e7/Hero111-icon.png",
+		"splash": "0/02/Bane_%28Frozen_King%29.jpg"
+	},
+	{
+		"id": "121",
+		"number": 12,
+		"name": "Bruno",
+		"title": "The Protector",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Eruditio",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 399,
+			"bp": 15000
+		},
+		"icon": "f/f9/Hero121-icon.png",
+		"splash": "a/ac/Bruno_%28The_Protector%29.jpg"
+	},
+	{
+		"id": "131",
+		"number": 13,
+		"name": "Clint",
+		"title": "West Justice",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 399,
+			"bp": 15000
+		},
+		"icon": "7/73/Hero131-icon.png",
+		"splash": "1/19/Clint_%28West_Justice%29.jpg"
+	},
+	{
+		"id": "141",
+		"number": 14,
+		"name": "Rafaela",
+		"title": "Wings of Holiness",
+		"roles": ["Support"],
+		"lanes": ["Roaming"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 299,
+			"bp": 6500
+		},
+		"icon": "5/5e/Hero141-icon.png",
+		"splash": "6/68/Rafaela_%28Wings_of_Holiness%29.jpg"
+	},
+	{
+		"id": "151",
+		"number": 15,
+		"name": "Eudora",
+		"title": "Lightning Weaver",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Northern Vale",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 399,
+			"bp": 2000
+		},
+		"icon": "2/2a/Hero151-icon.png",
+		"splash": "1/11/Eudora_%28Lightning_Weaver%29.jpg"
+	},
+	{
+		"id": "161",
+		"number": 16,
+		"name": "Zilong",
+		"title": "Spear of Dragon",
+		"roles": ["Fighter", "Assassin"],
+		"lanes": ["EXP Lane"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2016,
+		"price": {
+			"bp": 15000,
+			"ticket": 399
+		},
+		"icon": "5/5f/Hero161-icon.png",
+		"splash": "c/c1/Zilong_%28Spear_of_Dragon%29.jpg"
+	},
+	{
+		"id": "171",
+		"number": 17,
+		"name": "Fanny",
+		"title": "Blade Dancer",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 499,
+			"bp": 24000
+		},
+		"icon": "7/78/Hero171-icon.png",
+		"splash": "a/ac/Fanny_%28Blade_Dancer%29.jpg"
+	},
+	{
+		"id": "181",
+		"number": 18,
+		"name": "Layla",
+		"title": "Energy Gunner",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Eruditio",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 299,
+			"bp": 2000
+		},
+		"icon": "0/02/Hero181-icon.png",
+		"splash": "f/f9/Layla_%28Energy_Gunner%29.jpg"
+	},
+	{
+		"id": "191",
+		"number": 19,
+		"name": "Minotaur",
+		"title": "Son of Minos",
+		"roles": ["Tank", "Support"],
+		"lanes": ["Roaming"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 399,
+			"bp": 15000
+		},
+		"icon": "0/08/Hero191-icon.png",
+		"splash": "c/c1/Minotaur_%28Son_of_Minos%29.jpg"
+	},
+	{
+		"id": "201",
+		"number": 20,
+		"name": "Lolita",
+		"title": "Steel Elf",
+		"roles": ["Support", "Tank"],
+		"lanes": ["Roaming"],
+		"region": "Eruditio",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "1/17/Hero201-icon.png",
+		"splash": "d/dc/Lolita_%28Steel_Elf%29.jpg"
+	},
+	{
+		"id": "211",
+		"number": 21,
+		"name": "Hayabusa",
+		"title": "Crimson Shadow",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "c/cb/Hero211-icon.png",
+		"splash": "5/5c/Hayabusa_%28Crimson_Shadow%29.jpg"
+	},
+	{
+		"id": "221",
+		"number": 22,
+		"name": "Freya",
+		"title": "Valkyrie",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane", "Jungle"],
+		"region": "Northern Vale",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 599
+		},
+		"icon": "4/4e/Hero221-icon.png",
+		"splash": "4/44/Freya_%28Valkyrie%29.jpg"
+	},
+	{
+		"id": "231",
+		"number": 23,
+		"name": "Gord",
+		"title": "Professor of the Mystics",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Northern Vale",
+		"releaseYear": 2016,
+		"price": {
+			"bp": 24000,
+			"ticket": 499
+		},
+		"icon": "2/27/Hero231-icon.png",
+		"splash": "1/1a/Gord_%28Professor_of_the_Mystics%29.jpg"
+	},
+	{
+		"id": "241",
+		"number": 24,
+		"name": "Natalia",
+		"title": "Bright Claw",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle", "Roaming"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "6/6a/Hero241-icon.png",
+		"splash": "7/78/Natalia_%28Bright_Claw%29.jpg"
+	},
+	{
+		"id": "251",
+		"number": 25,
+		"name": "Kagura",
+		"title": "Onmyouji Master",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "e/ef/Hero251-icon.png",
+		"splash": "f/ff/Kagura_%28Onmyouji_Master%29.jpg"
+	},
+	{
+		"id": "261",
+		"number": 26,
+		"name": "Chou",
+		"title": "Kung Fu Boy",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane", "Roaming"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 499,
+			"bp": 24000
+		},
+		"icon": "a/a9/Hero261-icon.png",
+		"splash": "0/0c/Chou_%28Kung_Fu_Boy%29.jpg"
+	},
+	{
+		"id": "271",
+		"number": 27,
+		"name": "Sun",
+		"title": "Monkey King",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane", "Jungle"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2016,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "f/fe/Hero271-icon.png",
+		"splash": "4/49/Sun_%28Monkey_King%29.jpg"
+	},
+	{
+		"id": "281",
+		"number": 28,
+		"name": "Alpha",
+		"title": "Blade of Enmity",
+		"roles": ["Fighter"],
+		"lanes": ["Jungle", "EXP Lane"],
+		"region": "Laboratory 1718",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "3/38/Hero281-icon.png",
+		"splash": "4/4a/Alpha_%28Blade_of_Enmity%29.jpg"
+	},
+	{
+		"id": "291",
+		"number": 29,
+		"name": "Ruby",
+		"title": "Little Red Hood",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "1/1d/Hero291-icon.png",
+		"splash": "2/27/Ruby_%28Little_Red_Hood%29.jpg"
+	},
+	{
+		"id": "301",
+		"number": 30,
+		"name": "Yi Sun-shin",
+		"title": "Paenlong Legend",
+		"roles": ["Assassin", "Marksman"],
+		"lanes": ["Jungle"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "e/ed/Hero301-icon.png",
+		"splash": "0/0c/Yi_Sun-shin_%28Paenlong_Legend%29.jpg"
+	},
+	{
+		"id": "311",
+		"number": 31,
+		"name": "Moskov",
+		"title": "Spear of Quiescence",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 399,
+			"bp": 32000
+		},
+		"icon": "2/2e/Hero311-icon.png",
+		"splash": "a/a1/Moskov_%28Spear_of_Quiescence%29.jpg"
+	},
+	{
+		"id": "321",
+		"number": 32,
+		"name": "Johnson",
+		"title": "Wild Engine",
+		"roles": ["Tank", "Support"],
+		"lanes": ["Roaming"],
+		"region": "Eruditio",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "7/73/Hero321-icon.png",
+		"splash": "1/14/Johnson_%28Wild_Engine%29.jpg"
+	},
+	{
+		"id": "331",
+		"number": 33,
+		"name": "Cyclops",
+		"title": "Starsoul Magician",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Nebula Chronorift",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 399,
+			"bp": 15000
+		},
+		"icon": "9/96/Hero331-icon.png",
+		"splash": "0/0d/Cyclops_%28Starsoul_Magician%29.jpg"
+	},
+	{
+		"id": "341",
+		"number": 34,
+		"name": "Estes",
+		"title": "Moon Elf King",
+		"roles": ["Support"],
+		"lanes": ["Roaming"],
+		"region": "Azrya Woodlands",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 499,
+			"bp": 24000
+		},
+		"icon": "9/92/Hero341-icon.png",
+		"splash": "8/88/Estes_%28Moon_Elf_King%29.jpg"
+	},
+	{
+		"id": "351",
+		"number": 35,
+		"name": "Hilda",
+		"title": "Power of Megalith",
+		"roles": ["Fighter", "Tank"],
+		"lanes": ["Roaming", "EXP Lane"],
+		"region": "Northern Vale",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 499,
+			"bp": 24000
+		},
+		"icon": "1/11/Hero351-icon.png",
+		"splash": "7/70/Hilda_%28Power_of_Megalith%29.jpg"
+	},
+	{
+		"id": "361",
+		"number": 36,
+		"name": "Aurora",
+		"title": "Maiden of the Glacier",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Northern Vale",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 499,
+			"bp": 24000
+		},
+		"icon": "2/2c/Hero361-icon.png",
+		"splash": "9/9a/Aurora_%28Maiden_of_the_Glacier%29.jpg"
+	},
+	{
+		"id": "371",
+		"number": 37,
+		"name": "Lapu-Lapu",
+		"title": "Courageous Blade",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane"],
+		"region": "Vonetis Sea",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "e/ee/Hero371-icon.png",
+		"splash": "6/64/Lapu-Lapu_%28Courageous_Blade%29.jpg"
+	},
+	{
+		"id": "381",
+		"number": 38,
+		"name": "Vexana",
+		"title": "Shimmer of Hope",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "The Barren Lands",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "6/6d/Hero381-icon.png",
+		"splash": "c/c2/Vexana_%28Shimmer_of_Hope%29.jpg"
+	},
+	{
+		"id": "391",
+		"number": 39,
+		"name": "Roger",
+		"title": "Dire Wolf Hunter",
+		"roles": ["Fighter", "Marksman"],
+		"lanes": ["Jungle"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 499,
+			"bp": 24000
+		},
+		"icon": "9/97/Hero391-icon.png",
+		"splash": "7/70/Roger_%28Dire_Wolf_Hunter%29.jpg"
+	},
+	{
+		"id": "401",
+		"number": 40,
+		"name": "Karrie",
+		"title": "Lost Star",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Alaghat",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 499,
+			"bp": 24000
+		},
+		"icon": "d/de/Hero401-icon.png",
+		"splash": "6/67/Karrie_%28Lost_Star%29.jpg"
+	},
+	{
+		"id": "411",
+		"number": 41,
+		"name": "Gatotkaca",
+		"title": "Mighty Legend",
+		"roles": ["Tank", "Fighter"],
+		"lanes": ["Roaming", "EXP Lane"],
+		"region": "Nebula Chronorift",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "c/cb/Hero411-icon.png",
+		"splash": null
+	},
+	{
+		"id": "421",
+		"number": 42,
+		"name": "Harley",
+		"title": "Mage Genius",
+		"roles": ["Assassin", "Mage"],
+		"lanes": ["Jungle", "Mid Lane"],
+		"region": "Northern Vale",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "9/92/Hero421-icon.png",
+		"splash": "8/8a/Harley_%28Mage_Genius%29.jpg"
+	},
+	{
+		"id": "431",
+		"number": 43,
+		"name": "Irithel",
+		"title": "Jungle Heart",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Azrya Woodlands",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "5/58/Hero431-icon.png",
+		"splash": "2/2b/Irithel_%28Jungle_Heart%29.jpg"
+	},
+	{
+		"id": "441",
+		"number": 44,
+		"name": "Grock",
+		"title": "Fortress Titan",
+		"roles": ["Tank", "Fighter"],
+		"lanes": ["Roaming"],
+		"region": "The Barren Lands",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "d/dd/Hero441-icon.png",
+		"splash": "a/ae/Grock_%28Fortress_Titan%29.jpg"
+	},
+	{
+		"id": "451",
+		"number": 45,
+		"name": "Argus",
+		"title": "Dark Angel",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane"],
+		"region": "Abyss",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "c/c7/Hero451-icon.png",
+		"splash": "5/54/Argus_%28Dark_Angel%29.jpg"
+	},
+	{
+		"id": "461",
+		"number": 46,
+		"name": "Odette",
+		"title": "Swan Princess",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2017,
+		"price": {
+			"fragment": 120,
+			"lg": 20
+		},
+		"icon": "a/a9/Hero461-icon.png",
+		"splash": "e/e6/Odette_%28Swan_Princess%29.jpg"
+	},
+	{
+		"id": "471",
+		"number": 47,
+		"name": "Lancelot",
+		"title": "Blade of Roses",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "2/29/Hero471-icon.png",
+		"splash": "0/0d/Lancelot_%28Blade_of_Roses%29.jpg"
+	},
+	{
+		"id": "481",
+		"number": 48,
+		"name": "Diggie",
+		"title": "Timekeeper",
+		"roles": ["Support"],
+		"lanes": ["Roaming"],
+		"region": "Eruditio",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 499,
+			"bp": 24000
+		},
+		"icon": "e/e3/Hero481-icon.png",
+		"splash": "1/11/Diggie_%28Timekeeper%29.jpg"
+	},
+	{
+		"id": "491",
+		"number": 49,
+		"name": "Hylos",
+		"title": "Grand Warden",
+		"roles": ["Tank"],
+		"lanes": ["Roaming"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "0/0c/Hero491-icon.png",
+		"splash": "e/e6/Hylos_%28Grand_Warden%29.jpg"
+	},
+	{
+		"id": "501",
+		"number": 50,
+		"name": "Zhask",
+		"title": "The King of Swarms",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Kastiya",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "5/54/Hero501-icon.png",
+		"splash": "e/e4/Zhask_%28The_King_of_Swarms%29.jpg"
+	},
+	{
+		"id": "511",
+		"number": 51,
+		"name": "Helcurt",
+		"title": "Shadowbringer",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle", "Roaming"],
+		"region": "Abyss",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "e/eb/Hero511-icon.png",
+		"splash": "3/39/Helcurt_%28Shadowbringer%29.jpg"
+	},
+	{
+		"id": "521",
+		"number": 52,
+		"name": "Pharsa",
+		"title": "Wings of Vengeance",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "The Barren Lands",
+		"releaseYear": 2017,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "e/ef/Hero521-icon.png",
+		"splash": "0/0c/Pharsa_%28Wings_of_Vengeance%29.jpg"
+	},
+	{
+		"id": "531",
+		"number": 53,
+		"name": "Lesley",
+		"title": "Deadly Sniper",
+		"roles": ["Marksman", "Assassin"],
+		"lanes": ["Gold Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "8/82/Hero531-icon.png",
+		"splash": "4/46/Lesley_%28Deadly_Sniper%29.jpg"
+	},
+	{
+		"id": "541",
+		"number": 54,
+		"name": "Jawhead",
+		"title": "Steel Sweetheart",
+		"roles": ["Fighter"],
+		"lanes": ["Roaming", "EXP Lane"],
+		"region": "Laboratory 1718",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "1/1c/Hero541-icon.png",
+		"splash": "8/89/Jawhead_%28Steel_Sweetheart%29.jpg"
+	},
+	{
+		"id": "551",
+		"number": 55,
+		"name": "Angela",
+		"title": "Bunnylove",
+		"roles": ["Support"],
+		"lanes": ["Roaming"],
+		"region": "Laboratory 1718",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 499,
+			"bp": 24000
+		},
+		"icon": "1/13/Hero551-icon.png",
+		"splash": "b/b8/Angela_%28Bunnylove%29.jpg"
+	},
+	{
+		"id": "561",
+		"number": 56,
+		"name": "Gusion",
+		"title": "Holy Blade",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle", "Mid Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "9/94/Hero561-icon.png",
+		"splash": "7/7f/Gusion_%28Holy_Blade%29.jpg"
+	},
+	{
+		"id": "571",
+		"number": 57,
+		"name": "Valir",
+		"title": "Son of Flames",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "6/60/Hero571-icon.png",
+		"splash": "1/1a/Valir_%28Son_of_Flames%29.jpg"
+	},
+	{
+		"id": "581",
+		"number": 58,
+		"name": "Martis",
+		"title": "Ashura King",
+		"roles": ["Fighter"],
+		"lanes": ["Jungle", "EXP Lane"],
+		"region": "Nebula Chronorift",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "a/ac/Hero581-icon.png",
+		"splash": "b/b7/Martis_%28Asura_King%29.jpg"
+	},
+	{
+		"id": "591",
+		"number": 59,
+		"name": "Uranus",
+		"title": "Aesthereal Defender",
+		"roles": ["Tank"],
+		"lanes": ["EXP Lane"],
+		"region": "Celestial Palace",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "b/ba/Hero591-icon.png",
+		"splash": "7/7e/Uranus_%28Aethereal_Defender%29.jpg"
+	},
+	{
+		"id": "601",
+		"number": 60,
+		"name": "Hanabi",
+		"title": "Scarlet Flower",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "f/ff/Hero601-icon.png",
+		"splash": "5/5c/Hanabi_%28Scarlet_Flower%29.jpg"
+	},
+	{
+		"id": "611",
+		"number": 61,
+		"name": "Chang'e",
+		"title": "Moon Palace Immortal",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000,
+			"fragment": 120
+		},
+		"icon": "5/5c/Hero611-icon.png",
+		"splash": "4/4b/Chang%27e_%28Moon_Palace_Immortal%29.jpg"
+	},
+	{
+		"id": "621",
+		"number": 62,
+		"name": "Kaja",
+		"title": "Nazar King",
+		"roles": ["Support"],
+		"lanes": ["Roaming"],
+		"region": "Celestial Palace",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "2/28/Hero621-icon.png",
+		"splash": "c/c2/Kaja_%28Nazar_King%29.jpg"
+	},
+	{
+		"id": "631",
+		"number": 63,
+		"name": "Selena",
+		"title": "Abyssal Witch",
+		"roles": ["Assassin", "Mage"],
+		"lanes": ["Mid Lane", "Roaming"],
+		"region": "Abyss",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "d/d4/Hero631-icon.png",
+		"splash": "7/7a/Selena_%28Abyssal_Witch%29.jpg"
+	},
+	{
+		"id": "641",
+		"number": 64,
+		"name": "Aldous",
+		"title": "Soul Contractor",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "9/95/Hero641-icon.png",
+		"splash": null
+	},
+	{
+		"id": "651",
+		"number": 65,
+		"name": "Claude",
+		"title": "Master Thief",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Los Pecados",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "2/29/Hero651-icon.png",
+		"splash": "2/20/Claude_%28Master_Thief%29.jpg"
+	},
+	{
+		"id": "661",
+		"number": 66,
+		"name": "Vale",
+		"title": "Windtalker",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "f/fb/Hero661-icon.png",
+		"splash": "1/14/Vale_%28Windtalker%29.jpg"
+	},
+	{
+		"id": "671",
+		"number": 67,
+		"name": "Leomord",
+		"title": "Sworn Sword",
+		"roles": ["Fighter"],
+		"lanes": ["Jungle"],
+		"region": "The Barren Lands",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "8/88/Hero671-icon.png",
+		"splash": "0/0a/Leomord_%28Sworn_Sword%29.jpg"
+	},
+	{
+		"id": "681",
+		"number": 68,
+		"name": "Lunox",
+		"title": "Twilight Goddess",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "f/f6/Hero681-icon.png",
+		"splash": "6/6a/Lunox_%28Twilight_Goddess%29.jpg"
+	},
+	{
+		"id": "691",
+		"number": 69,
+		"name": "Hanzo",
+		"title": "Akuma Ninja",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "f/f4/Hero691-icon.png",
+		"splash": "1/12/Hanzo_%28Akuma_Ninja%29.jpg"
+	},
+	{
+		"id": "701",
+		"number": 70,
+		"name": "Belerick",
+		"title": "Guard of Nature",
+		"roles": ["Tank"],
+		"lanes": ["Roaming"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "d/d7/Hero701-icon.png",
+		"splash": "5/5c/Belerick_%28Guard_of_Nature%29.jpg"
+	},
+	{
+		"id": "711",
+		"number": 71,
+		"name": "Kimmy",
+		"title": "Hoverjet Outrider",
+		"roles": ["Marksman", "Mage"],
+		"lanes": ["Mid Lane", "Gold Lane"],
+		"region": "Eruditio",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "1/15/Hero711-icon.png",
+		"splash": "8/83/Kimmy_%28Hoverjet_Outrider%29.jpg"
+	},
+	{
+		"id": "721",
+		"number": 72,
+		"name": "Thamuz",
+		"title": "Lord Lava",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane"],
+		"region": "Abyss",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "1/17/Hero721-icon.png",
+		"splash": "8/80/Thamuz_%28Lord_Lava%29.jpg"
+	},
+	{
+		"id": "731",
+		"number": 73,
+		"name": "Harith",
+		"title": "Time Traveler",
+		"roles": ["Mage"],
+		"lanes": ["Gold Lane", "Jungle"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "5/5a/Hero731-icon.png",
+		"splash": "8/89/Harith_%28Time_Traveler%29.jpg"
+	},
+	{
+		"id": "741",
+		"number": 74,
+		"name": "Minsitthar",
+		"title": "Courageous Warrior",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane", "Roaming"],
+		"region": "Vonetis Sea",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "1/1e/Hero741-icon.png",
+		"splash": "0/0e/Minsitthar_%28Courageous_Warrior%29.jpg"
+	},
+	{
+		"id": "751",
+		"number": 75,
+		"name": "Kadita",
+		"title": "Ocean Goddess",
+		"roles": ["Mage", "Assassin"],
+		"lanes": ["Mid Lane"],
+		"region": "Vonetis Sea",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "4/46/Hero751-icon.png",
+		"splash": "4/44/Kadita_%28Ocean_Goddess%29.jpg"
+	},
+	{
+		"id": "761",
+		"number": 76,
+		"name": "Faramis",
+		"title": "Soul Binder",
+		"roles": ["Support", "Mage"],
+		"lanes": ["Mid Lane", "Roaming"],
+		"region": "The Barren Lands",
+		"releaseYear": 2018,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "3/34/Hero761-icon.png",
+		"splash": "5/57/Faramis_%28Soul_Binder%29.jpg"
+	},
+	{
+		"id": "771",
+		"number": 77,
+		"name": "Badang",
+		"title": "Tribal Warrior",
+		"roles": ["Fighter"],
+		"lanes": ["Roaming", "EXP Lane"],
+		"region": "Vonetis Sea",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "a/a4/Hero771-icon.png",
+		"splash": "7/73/Badang_%28Tribal_Warrior%29.jpg"
+	},
+	{
+		"id": "781",
+		"number": 78,
+		"name": "Khufra",
+		"title": "Desert Tyrant",
+		"roles": ["Tank"],
+		"lanes": ["Roaming"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "c/cd/Hero781-icon.png",
+		"splash": "3/31/Khufra_%28Desert_Tyrant%29.jpg"
+	},
+	{
+		"id": "791",
+		"number": 79,
+		"name": "Granger",
+		"title": "Death Chanter",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "7/7c/Hero791-icon.png",
+		"splash": "9/9e/Granger_%28Death_Chanter%29.jpg"
+	},
+	{
+		"id": "801",
+		"number": 80,
+		"name": "Guinevere",
+		"title": "Ms. Violet",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "f/f1/Hero801-icon.png",
+		"splash": "f/f6/Guinevere_%28Ms._Violet%29.jpg"
+	},
+	{
+		"id": "811",
+		"number": 81,
+		"name": "Esmeralda",
+		"title": "Astrologer",
+		"roles": ["Tank", "Mage"],
+		"lanes": ["EXP Lane"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "8/88/Hero811-icon.png",
+		"splash": "9/9e/Esmeralda_%28Astrologer%29.jpg"
+	},
+	{
+		"id": "821",
+		"number": 82,
+		"name": "Terizla",
+		"title": "Executioner",
+		"roles": ["Fighter", "Tank"],
+		"lanes": ["EXP Lane"],
+		"region": "Abyss",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "a/ab/Hero821-icon.png",
+		"splash": "5/56/Terizla_%28Executioner%29.jpg"
+	},
+	{
+		"id": "831",
+		"number": 83,
+		"name": "X.Borg",
+		"title": "Firaga Armor",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane"],
+		"region": "Eruditio",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "7/7a/Hero831-icon.png",
+		"splash": "d/d2/X.Borg_%28Firaga_Armor%29.jpg"
+	},
+	{
+		"id": "841",
+		"number": 84,
+		"name": "Ling",
+		"title": "Cyan Finch",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "c/ca/Hero841-icon.png",
+		"splash": "5/50/Ling_%28Cyan_Finch%29.jpg"
+	},
+	{
+		"id": "851",
+		"number": 85,
+		"name": "Dyrroth",
+		"title": "Prince of the Abyss",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane", "Jungle"],
+		"region": "Abyss",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "6/62/Hero851-icon.png",
+		"splash": "9/98/Dyrroth_%28Prince_of_the_Abyss%29.jpg"
+	},
+	{
+		"id": "861",
+		"number": 86,
+		"name": "Lylia",
+		"title": "Little Witch",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Northern Vale",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "a/a4/Hero861-icon.png",
+		"splash": "c/cb/Lylia_%28Little_Witch%29.jpg"
+	},
+	{
+		"id": "871",
+		"number": 87,
+		"name": "Baxia",
+		"title": "Mystic Tortoise",
+		"roles": ["Tank"],
+		"lanes": ["Jungle", "Roaming"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "0/09/Hero871-icon.png",
+		"splash": "3/3a/Baxia_%28Mystic_Tortoise%29.jpg"
+	},
+	{
+		"id": "881",
+		"number": 88,
+		"name": "Masha",
+		"title": "Wild-oats Fist",
+		"roles": ["Fighter", "Tank"],
+		"lanes": ["EXP Lane"],
+		"region": "Northern Vale",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "c/c5/Hero881-icon.png",
+		"splash": "7/7d/Masha_%28Wild-oats_Fist%29.jpg"
+	},
+	{
+		"id": "891",
+		"number": 89,
+		"name": "Wanwan",
+		"title": "Agile Tiger",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "2/24/Hero891-icon.png",
+		"splash": "5/50/Wanwan_%28Agile_Tiger%29.jpg"
+	},
+	{
+		"id": "901",
+		"number": 90,
+		"name": "Silvanna",
+		"title": "Imperial Knightess",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2019,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "4/40/Hero901-icon.png",
+		"splash": "8/85/Silvanna_%28Imperial_Knightess%29.jpg"
+	},
+	{
+		"id": "911",
+		"number": 91,
+		"name": "Cecilion",
+		"title": "Embrace of Night",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2020,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "8/85/Hero911-icon.png",
+		"splash": "1/10/Cecilion_%28Embrace_of_Night%29.jpg"
+	},
+	{
+		"id": "921",
+		"number": 92,
+		"name": "Carmilla",
+		"title": "Shadow of Twilight",
+		"roles": ["Support", "Tank"],
+		"lanes": ["Roaming"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2020,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "2/23/Hero921-icon.png",
+		"splash": "8/84/Carmilla_%28Shadow_of_Twilight%29.jpg"
+	},
+	{
+		"id": "931",
+		"number": 93,
+		"name": "Atlas",
+		"title": "Ocean Gladiator",
+		"roles": ["Tank"],
+		"lanes": ["Roaming"],
+		"region": "Northern Vale",
+		"releaseYear": 2020,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "6/6e/Hero931-icon.png",
+		"splash": "e/ea/Atlas_%28Ocean_Gladiator%29.jpg"
+	},
+	{
+		"id": "941",
+		"number": 94,
+		"name": "Popol and Kupa",
+		"title": "Icefield Companions",
+		"roles": ["Marksman"],
+		"lanes": ["Jungle", "Gold Lane"],
+		"region": "Northern Vale",
+		"releaseYear": 2020,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "a/ab/Hero941-icon.png",
+		"splash": "e/e3/Popol_and_Kupa_%28Icefield_Companions%29.jpg"
+	},
+	{
+		"id": "951",
+		"number": 95,
+		"name": "Yu Zhong",
+		"title": "Black Dragon",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2020,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "5/53/Hero951-icon.png",
+		"splash": "1/19/Yu_Zhong_%28Black_Dragon%29.jpg"
+	},
+	{
+		"id": "961",
+		"number": 96,
+		"name": "Luo Yi",
+		"title": "Yin-yang Geomancer",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2020,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "f/f0/Hero961-icon.png",
+		"splash": "1/18/Luo_Yi_%28Yin-yang_Geomancer%29.jpg"
+	},
+	{
+		"id": "971",
+		"number": 97,
+		"name": "Benedetta",
+		"title": "Shadow Ranger",
+		"roles": ["Assassin", "Fighter"],
+		"lanes": ["EXP Lane"],
+		"region": "The Barren Lands",
+		"releaseYear": 2020,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "4/47/Hero971-icon.png",
+		"splash": "3/3e/Benedetta_%28Shadow_Ranger%29.jpg"
+	},
+	{
+		"id": "981",
+		"number": 98,
+		"name": "Khaleed",
+		"title": "Desert Scimitar",
+		"roles": ["Fighter"],
+		"lanes": ["Roaming", "EXP Lane"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2020,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "d/d2/Hero981-icon.png",
+		"splash": "c/ca/Khaleed_%28Desert_Scimitar%29.jpg"
+	},
+	{
+		"id": "991",
+		"number": 99,
+		"name": "Barats",
+		"title": "Dino Rider",
+		"roles": ["Tank", "Fighter"],
+		"lanes": ["Jungle"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2020,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "1/1a/Hero991-icon.png",
+		"splash": "7/70/Barats_%28Dino_Rider%29.jpg"
+	},
+	{
+		"id": "1001",
+		"number": 100,
+		"name": "Brody",
+		"title": "The Lone Star",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "The Barren Lands",
+		"releaseYear": 2020,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "1/12/Hero1001-icon.png",
+		"splash": "8/8e/Brody_%28The_Lone_Star%29.jpg"
+	},
+	{
+		"id": "1011",
+		"number": 101,
+		"name": "Yve",
+		"title": "Astrowarden",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Northern Vale",
+		"releaseYear": 2021,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "c/cd/Hero1011-icon.png",
+		"splash": "c/ce/Yve_%28Astrowarden%29.jpg"
+	},
+	{
+		"id": "1021",
+		"number": 102,
+		"name": "Mathilda",
+		"title": "Swift Plume",
+		"roles": ["Support", "Assassin"],
+		"lanes": ["Roaming"],
+		"region": "Los Pecados",
+		"releaseYear": 2020,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "c/cf/Hero1021-icon.png",
+		"splash": "0/04/Mathilda_%28Swift_Plume%29.jpg"
+	},
+	{
+		"id": "1031",
+		"number": 103,
+		"name": "Paquito",
+		"title": "The Heavenly Fist",
+		"roles": ["Fighter", "Assassin"],
+		"lanes": ["EXP Lane"],
+		"region": "The Barren Lands",
+		"releaseYear": 2021,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "3/35/Hero1031-icon.png",
+		"splash": "3/37/Paquito_%28The_Heavenly_Fist%29.jpg"
+	},
+	{
+		"id": "1041",
+		"number": 104,
+		"name": "Gloo",
+		"title": "Swamp Spirits",
+		"roles": ["Tank"],
+		"lanes": ["Roaming", "EXP Lane"],
+		"region": "Azrya Woodlands",
+		"releaseYear": 2021,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "4/45/Hero1041-icon.png",
+		"splash": "1/17/Gloo_%28Swamp_Spirits%29.jpg"
+	},
+	{
+		"id": "1051",
+		"number": 105,
+		"name": "Beatrix",
+		"title": "Dawnbreak Soldier",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Eruditio",
+		"releaseYear": 2021,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "a/a9/Hero1051-icon.png",
+		"splash": "c/cb/Beatrix_%28Dawnbreak_Soldier%29.jpg"
+	},
+	{
+		"id": "1061",
+		"number": 106,
+		"name": "Phoveus",
+		"title": "Chains of Sin",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane"],
+		"region": "The Barren Lands",
+		"releaseYear": 2021,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "8/88/Hero1061-icon.png",
+		"splash": "d/d1/Phoveus_%28Chains_of_Sin%29.jpg"
+	},
+	{
+		"id": "1071",
+		"number": 107,
+		"name": "Natan",
+		"title": "Spacetime Walker",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2021,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "2/25/Hero1071-icon.png",
+		"splash": "1/18/Natan_%28Spacetime_Walker%29.jpg"
+	},
+	{
+		"id": "1081",
+		"number": 108,
+		"name": "Aulus",
+		"title": "Warrior of Ferocity",
+		"roles": ["Fighter"],
+		"lanes": ["Jungle"],
+		"region": "The Barren Lands",
+		"releaseYear": 2021,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "b/bf/Hero1081-icon.png",
+		"splash": "8/89/Aulus_%28Warrior_of_Ferocity%29.jpg"
+	},
+	{
+		"id": "1091",
+		"number": 109,
+		"name": "Aamon",
+		"title": "Duke of Shards",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2021,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "b/bc/Hero1091-icon.png",
+		"splash": "2/2c/Aamon_%28Duke_of_Shards%29.jpg"
+	},
+	{
+		"id": "1101",
+		"number": 110,
+		"name": "Valentina",
+		"title": "Prophetess of the Night",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2021,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "6/62/Hero1101-icon.png",
+		"splash": "2/28/Valentina_%28Prophetess_of_the_Night%29.jpg"
+	},
+	{
+		"id": "1111",
+		"number": 111,
+		"name": "Edith",
+		"title": "Ancient Guard",
+		"roles": ["Tank", "Marksman"],
+		"lanes": ["EXP Lane", "Roaming"],
+		"region": "Sanctum Island",
+		"releaseYear": 2021,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "3/36/Hero1111-icon.png",
+		"splash": "a/a4/Edith_%28Ancient_Guard%29.jpg"
+	},
+	{
+		"id": "1121",
+		"number": 112,
+		"name": "Floryn",
+		"title": "The Budding Hope",
+		"roles": ["Support"],
+		"lanes": ["Roaming"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2021,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "2/20/Hero1121-icon.png",
+		"splash": "4/4f/Floryn_%28The_Budding_Hope%29.jpg"
+	},
+	{
+		"id": "1131",
+		"number": 113,
+		"name": "Yin",
+		"title": "Martial Genius",
+		"roles": ["Fighter", "Assassin"],
+		"lanes": ["Jungle", "EXP Lane"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2022,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "b/b5/Hero1131-icon.png",
+		"splash": "6/68/Yin_%28Martial_Genius%29.jpg"
+	},
+	{
+		"id": "1141",
+		"number": 114,
+		"name": "Melissa",
+		"title": "Cursed Needle",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2022,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "0/09/Hero1141-icon.png",
+		"splash": "e/ec/Melissa_%28Cursed_Needle%29.jpg"
+	},
+	{
+		"id": "1151",
+		"number": 115,
+		"name": "Xavier",
+		"title": "Defier of Light",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2022,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "8/80/Hero1151-icon.png",
+		"splash": "3/3a/Xavier_%28Defier_of_Light%29.jpg"
+	},
+	{
+		"id": "1161",
+		"number": 116,
+		"name": "Julian",
+		"title": "Scarlet Raven",
+		"roles": ["Assassin", "Fighter"],
+		"lanes": ["Jungle", "EXP Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2022,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "c/c2/Hero1161-icon.png",
+		"splash": "c/c1/Julian_%28Scarlet_Raven%29.jpg"
+	},
+	{
+		"id": "1171",
+		"number": 117,
+		"name": "Fredrinn",
+		"title": "Rogue Appraiser",
+		"roles": ["Fighter", "Tank"],
+		"lanes": ["Jungle"],
+		"region": "Los Pecados",
+		"releaseYear": 2022,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "f/f4/Hero1171-icon.png",
+		"splash": "3/33/Fredrinn_%28Rogue_Appraiser%29.jpg"
+	},
+	{
+		"id": "1181",
+		"number": 118,
+		"name": "Joy",
+		"title": "Flash of Miracle",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle"],
+		"region": "Azrya Woodlands",
+		"releaseYear": 2022,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "c/c1/Hero1181-icon.png",
+		"splash": "b/b0/Joy_%28Flash_of_Miracle%29.jpg"
+	},
+	{
+		"id": "1191",
+		"number": 119,
+		"name": "Novaria",
+		"title": "Star Rebel",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Eruditio",
+		"releaseYear": 2023,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "a/a1/Hero1191-icon.png",
+		"splash": "6/64/Novaria_%28Star_Rebel%29.jpg"
+	},
+	{
+		"id": "1201",
+		"number": 120,
+		"name": "Arlott",
+		"title": "Lone Lancer",
+		"roles": ["Fighter", "Assassin"],
+		"lanes": ["EXP Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2023,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "2/22/Hero1201-icon.png",
+		"splash": "f/ff/Arlott_%28Lone_Lancer%29.jpg"
+	},
+	{
+		"id": "1211",
+		"number": 121,
+		"name": "Ixia",
+		"title": "Arclight Outlaw",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Eruditio",
+		"releaseYear": 2023,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "a/a2/Hero1211-icon.png",
+		"splash": null
+	},
+	{
+		"id": "1221",
+		"number": 122,
+		"name": "Nolan",
+		"title": "Cosmic Wayfinder",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle"],
+		"region": "Eruditio",
+		"releaseYear": 2023,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "e/e1/Hero1221-icon.png",
+		"splash": "b/b1/Nolan_%28Cosmic_Wayfinder%29.jpg"
+	},
+	{
+		"id": "1231",
+		"number": 123,
+		"name": "Cici",
+		"title": "Buoyant Performer",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2023,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "6/65/Hero1231-icon.png",
+		"splash": "9/93/Cici_%28Buoyant_Performer%29.jpg"
+	},
+	{
+		"id": "1241",
+		"number": 124,
+		"name": "Chip",
+		"title": "Phase Technician",
+		"roles": ["Support", "Tank"],
+		"lanes": ["Roaming"],
+		"region": "Laboratory 1718",
+		"releaseYear": 2024,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "9/94/Hero1241-icon.png",
+		"splash": "9/94/Chip_%28Phase_Technician%29.jpg"
+	},
+	{
+		"id": "1251",
+		"number": 125,
+		"name": "Zhuxin",
+		"title": "Beacon of Spirits",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2024,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "0/05/Hero1251-icon.png",
+		"splash": "6/6f/Zhuxin_%28Beacon_of_Spirits%29.jpg"
+	},
+	{
+		"id": "1261",
+		"number": 126,
+		"name": "Suyou",
+		"title": "Mask of the Immortal",
+		"roles": ["Assassin", "Fighter"],
+		"lanes": ["Jungle"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2024,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "c/c4/Hero1261-icon.png",
+		"splash": "8/8e/Suyou_%28Mask_of_the_Immortal%29.jpg"
+	},
+	{
+		"id": "1271",
+		"number": 127,
+		"name": "Lukas",
+		"title": "Beast of Light",
+		"roles": ["Fighter"],
+		"lanes": ["EXP Lane", "Jungle"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2024,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "1/1c/Hero1271-icon.png",
+		"splash": "d/de/Lukas_%28Beast_of_Light%29.jpg"
+	},
+	{
+		"id": "1281",
+		"number": 128,
+		"name": "Kalea",
+		"title": "Surging Wave",
+		"roles": ["Support", "Fighter"],
+		"lanes": ["Roaming"],
+		"region": "Vonetis Sea",
+		"releaseYear": 2025,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "5/56/Hero1281-icon.png",
+		"splash": "e/e9/Kalea_%28Surging_Wave%29.jpg"
+	},
+	{
+		"id": "1291",
+		"number": 129,
+		"name": "Zetian",
+		"title": "Celestial Empress",
+		"roles": ["Mage"],
+		"lanes": ["Mid Lane"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2025,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "5/5c/Hero1291-icon.png",
+		"splash": "9/99/Zetian_%28Celestial_Empress%29.jpg"
+	},
+	{
+		"id": "1301",
+		"number": 130,
+		"name": "Obsidia",
+		"title": "Sovereign of Dark's End",
+		"roles": ["Marksman"],
+		"lanes": ["Gold Lane"],
+		"region": "Abyss",
+		"releaseYear": 2025,
+		"price": {
+			"dm": 499,
+			"bp": 32000
+		},
+		"icon": "9/9b/Hero1301-icon.png",
+		"splash": "5/5c/Obsidia_%28Sovereign_of_Dark%27s_End%29.jpg"
+	},
+	{
+		"id": "1311",
+		"number": 131,
+		"name": "Sora",
+		"title": "Shifting Cloud",
+		"roles": ["Fighter", "Assassin"],
+		"lanes": ["EXP Lane"],
+		"region": "Agelta Drylands",
+		"releaseYear": 2025,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "c/cc/Hero1311-icon.png",
+		"splash": "2/26/Sora_%28Shifting_Cloud%29.jpg"
+	},
+	{
+		"id": "1321",
+		"number": 132,
+		"name": "Marcel",
+		"title": "Soul Photographer",
+		"roles": ["Support"],
+		"lanes": ["Roaming"],
+		"region": "Moniyan Empire",
+		"releaseYear": 2026,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "e/ee/Hero1321-icon.png",
+		"splash": "6/64/Marcel_%28Soul_Photographer%29.jpg"
+	},
+	{
+		"id": "1331",
+		"number": 133,
+		"name": "Hirara",
+		"title": "Fallen Scarlet",
+		"roles": ["Assassin"],
+		"lanes": ["Jungle"],
+		"region": "Cadia Riverlands",
+		"releaseYear": 2026,
+		"price": {
+			"dm": 599,
+			"bp": 32000
+		},
+		"icon": "0/02/Hero1331-icon.png",
+		"splash": "0/0e/Hirara_%28Fallen_Scarlet%29.jpg"
+	}
+]
