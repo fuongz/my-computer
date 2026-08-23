@@ -24,6 +24,7 @@ import { lottery } from "../tools/lottery/definition";
 import { pinterestTheme } from "../tools/pinterest-theme/definition";
 import { t1Tracker } from "../tools/t1-tracker/definition";
 import { taskNamer } from "../tools/task-namer/definition";
+import { youtubeCinema } from "../tools/youtube-cinema/definition";
 import type { ToolDefinition, ToolState } from "./types";
 
 export const TOOLS: ToolDefinition[] = [
@@ -31,6 +32,7 @@ export const TOOLS: ToolDefinition[] = [
 	t1Tracker,
 	taskNamer,
 	lottery,
+	youtubeCinema,
 ];
 
 export function getTool(id: string): ToolDefinition | undefined {

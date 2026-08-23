@@ -190,3 +190,136 @@ Added on the way, at the user's request:
        other filters are showing, so a chip means the same thing whichever else is
        selected; and left as a bare total until the store has read localStorage,
        because `0/44` for a frame is a claim about the account.
+
+## Pre-scheduled brackets — labelling an undecided slot
+
+Gate: `.agents/reviews/2026-08-23/01-read-a-bracket-before-it-is-filled-in-slot-labels-from-origi.md`
+(FE-03, approved on the recommended options, `done`). D2a abbreviated rounds,
+D3a Qualifier/Selection, D5a dashed loser edges.
+
+1. [x] `api.ts`: carry `origin` whole — kind (`match` | `seeding` | `decisionPoint`),
+       `structuralId`, `slot` — plus a `tbd` flag from the API's own `id === "0"`
+       marker, in place of the `fromMatch` string. Name `crossGroup`, bump the
+       standings cache key to v2.
+2. [x] `tournament.ts`: derive each undecided slot's label — winner/loser of an
+       abbreviated round, `Seed N`, and the two decision-point cases split by the
+       column a decision point first feeds. Drop the placeholder badge.
+3. [x] `tournament.ts` + `style.css`: dashed loser edges, and the per-section
+       "N teams enter this bracket" count.
+4. [x] `scripts/preview-popup.ts`: LCK Split 3 2026's two brackets as a fixture,
+       asserting labels, edges and the count. Then `bun run gate` and a live
+       spot-check over Split 3 2026, KeSPA Cup 2026 and Worlds 2026.
+
+Verified: `bun run gate` green; `preview:popup` 8 new checks over two runs (every
+label in the Regional Championship, `26 slots, 0 untitled, 0 badged`, `14 lines,
+4 dashed`); a throwaway live run through the real normaliser over 31 brackets and
+498 slots. Left open: Worlds' Swiss reads `Selection` on 50 slots where `Draw`
+may fit better — a one-line change in `slotLabel()` once the format is on screen.
+
+## Leaguepedia seeds over the lolesports bracket
+
+Gate: `.agents/reviews/2026-08-23/02-seeds-and-entrants-from-leaguepedia-over-the-lolesports-brac.md`
+(FE-04, approved on the recommended options, `done`). D2a both halves of the page,
+D3a zip by entry-slot count, D5a off by default.
+
+1. [x] `wiki.ts`: the six-league page table, the LCK season-hub walk, one batched
+       `action=query&prop=revisions` request, and the wikitext parse — Infobox
+       dates, `{{Bracket}}` seed keys, Participants team→seed. Cached 24h; an
+       empty answer cached, a transport failure not.
+2. [x] `tournament.ts`: pair a wiki bracket to the section with the same number
+       of entry slots (and only where that number is unique on both sides), then
+       relabel each entry slot, list the known entrants as chips, and credit the
+       page. `seedLabel()` turns "1 Rise" into `Rise #1` and leaves "A1" alone.
+3. [x] The gate: setting key in `constants.ts`, off-by-default setting in
+       `definition.ts`, `seedingFor()` in `panel.ts`, `lol.fandom.com` in
+       `host_permissions`, and a setting change now redraws its tool's panel
+       (`src/popup/index.ts`).
+4. [x] `scripts/preview-popup.ts`: the wiki stub with real wikitext, the fixtures
+       moved onto the LCK row so the LCK page rule is exercised, 8 assertions,
+       and the 503 path. Then `bun run gate` and three live runs.
+
+5. [x] Then, at the user's ask, three passes over the same feature:
+       badges on the "Already in" chips; the chips dropped entirely in favour of
+       filling the bracket itself (`fillSlots()` — a slot exactly one team can
+       take becomes that team's row, one two teams can take names both and keeps
+       T1's colour, and a slot the wiki named but nobody can be pinned to keeps
+       its seed); and both teams of a pair carrying their own badge.
+6. [x] The stored answer is stamped per tournament and re-read after an hour
+       rather than a day — these pages are edited the moment a group finishes —
+       with the stamp shown under the bracket ("read 12 minutes ago").
+       `relative()` moved to `time.ts`, since panel.ts and tournament.ts both
+       want it and panel.ts already imports tournament.ts.
+
+7. [x] And, asked next: a fixture card says which round of which bracket it is.
+       `bracketPositions()` in api.ts keys a tournament's bracket matches by the
+       API's own match id, which the schedule shares — verified against T1's
+       KeSPA run, where its three bracket fixtures resolve to Play-Ins Round 1,
+       Play-Ins Round 2 and the Semifinals. The schedule screen now asks for the
+       standings of the tournaments it is showing (capped at three, cached ten
+       minutes, filled in behind the cards so the fixtures never wait), which
+       changes the old "no standings until asked" contract to "the standings of
+       what is on screen, and no others" — asserted as such.
+
+8. [x] Then: every ` • ` and ` · ` in the extension replaced, on the same rule
+       review 08 settled for the web app. The fixture card's chain is a hierarchy
+       so it became a breadcrumb with a Hugeicons chevron between real spans; the
+       rest took the word or punctuation that fits — "Hồ Chí Minh **ngày** Thứ
+       Bảy 15/08/2026", "…used **(free tier)**", and the options tab title needed
+       no separator at all.
+
+Verified: gate green; `preview:popup` 121 checks; live runs show
+LCK yielding both brackets and eight entrants in 2 requests, Worlds yielding
+nothing in 1, and the entry-slot counts matching the wiki's seed counts 4↔4 and
+6↔6 on LCK Split 3 2026.
+
+## YouTube Cinema — a watch page that fills the window
+
+Gate: `.agents/reviews/2026-08-23/03-youtube-cinema-fill-the-viewport-on-watch-without-native-ful.md`
+(FE-05, decisions taken with the user, `processing`). Auto on every watch page,
+Shift+F / Escape to leave, off by default.
+
+1. [x] New page tool under `src/tools/youtube-cinema/`: `cinema.css` scoped to
+       `html[data-fz-youtube-cinema]` pinning `ytd-watch-flexy #movie_player` to the
+       viewport, and a `document_start` script owning that attribute.
+2. [x] Register it (registry, popup icon), declare it (manifest content script +
+       `https://www.youtube.com/*`), build it (`build:tools`, `dev:youtube`).
+3. [x] Handle what can change the answer: the switch and its `engage` setting,
+       Shift+F / Escape, SPA routing, and standing down for native fullscreen.
+4. [x] `bun run preview:youtube` — two real watch pages, one of them 4:3, asserting
+       the player is the viewport and that removing the attribute restores YouTube.
+5. [x] A toggle in the player's control bar, before fullscreen, present whether
+       cinema is on or off — anchored against the fullscreen button's own parent,
+       because YouTube nests the right-hand controls a level deeper now.
+6. [x] Split the `engage` picker into two independent on/off settings, *Every video*
+       and *Shift+F hotkey*, over a button that works with both off.
+7. [x] Turn `preview:youtube` into a harness for the real bundle: a
+       `chrome.storage.sync` stand-in, real mouse presses on the toggle, real key
+       events for Shift+F / Escape / `f`, and both settings and the switch flipped.
+8. [x] A way home over the video's top left — cinema hides the masthead, so it puts
+       the one control it took away back, fading with the player's own controls.
+9. [x] Redraw both icons on YouTube's current 24x24 grid as stroked outlines; the
+       first attempt's solid state shipped as a white block next to the real
+       controls. Four candidates rendered locally at 48x40 before choosing.
+10. [x] Fix a boot crash the harness could not see: `SVG_NS`, the icon paths and the
+       button's state were declared below the boot sequence, so every load after
+       the first — mirror already warm — hit a `ReferenceError` in `createButton()`
+       and lost every listener registered after `sync()`. Declarations moved up, and
+       the harness now asserts a warm-start boot on its second page.
+11. [x] Drop the control-bar toggle entirely. Four versions were rejected — filled
+       screen, film strip at two sizes, and a pill copying the player's own autoplay
+       switch — on weight and on alignment: the group it sits in is taller than the
+       40px buttons, so a full-height box centres its glyph below their line. The
+       bar is Google's and rebuilt without warning; the in-page surface is now the
+       way home plus the hotkey. `.fz-cinema-button` and its CSS are gone, and the
+       harness's toggle assertions were rewritten onto the way home.
+12. [ ] Look at it in a real browser: the way-home arrow appearing and fading with
+       the controls, and Shift+F / Escape. Mine to build, yours to eyeball —
+       `preview:youtube` is not to be run against real YouTube.
+
+Verified: `bun run gate` green; `preview:popup` and `preview:youtube` all checks
+passed on youtube.com — the layout (player 1400x813 in a 1400x813 viewport,
+control bar 1376px, no scroll, 4:3 letterboxed), the toggle under a real mouse
+press, Shift+F, Escape, `f` into real fullscreen and back, both settings, and the
+switch. The harness caught two real bugs — the `insertBefore` anchor, and the
+boot-order crash in step 10. Everything after step 7 is verified by build,
+typecheck and local icon renders only.

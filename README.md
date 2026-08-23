@@ -28,15 +28,19 @@ before a second consumer exists is a package shaped by exactly one caller.
 | Tool                     | What it does                                                                             | Runs on                  |
 | ------------------------ | ---------------------------------------------------------------------------------------- | ------------------------ |
 | **Pinterest Dark/Light** | Repaints pinterest.com to match the extension's appearance, with no white flash on load. | `pinterest.com`          |
-| **T1 Esports Tracker**   | T1's next matches, recent results, and each tournament's group stage or bracket.         | the popup itself         |
+| **T1 Esports Tracker**   | T1's next matches — each one told which round of which bracket it is — and every tournament's bracket, readable before it is filled in. | the popup itself         |
 | **Task Name Translator** | Rewrites selected text — Vietnamese or English — as one English task title.              | any page, on right-click |
 | **Dò vé số**             | Checks a Vietnamese lottery ticket against one province's draw on one date.              | the popup itself         |
+| **YouTube Cinema**       | Gives a watch page's video the whole window — no masthead, no comments, no fullscreen.   | `youtube.com`            |
 
-The extension talks to four servers and no more: pinterest.com (nothing, it only
-restyles it), lolesports.com for the schedule, OpenRouter for the task titles,
-and xskt.com.vn for the lottery results. There is no backend of ours in between
-— the OpenRouter call is billed to a key you paste in Settings and is made only
-when you pick the item from the right-click menu.
+The extension talks to six servers and no more: pinterest.com and youtube.com
+(nothing, it only restyles them), lolesports.com for the schedule, OpenRouter for
+the task titles,
+xskt.com.vn for the lottery results, and lol.fandom.com for the seeds an unfilled
+bracket is waiting on. There is no backend of ours in between — the OpenRouter
+call is billed to a key you paste in Settings and is made only when you pick the
+item from the right-click menu, and the wiki read is off until you switch it on
+in the tracker's own settings.
 
 ### The web app's tools
 
@@ -178,6 +182,70 @@ never attached to the popup's — and the request goes out from the popup direct
 because the extension page holds the `https://xskt.com.vn/*` permission and needs
 no worker in the middle.
 
+## YouTube Cinema
+
+A YouTube watch page never gives the video the window. Theater mode widens it
+and stops there: the masthead stays on top, and the title, the channel row, the
+comments and the related rail stay below. The only way to fill the screen is
+native fullscreen, which also takes the browser's own chrome and the menu bar —
+so watching something full-size *and* keeping a window is not on offer. Netflix's
+player does exactly that, and this is that, on YouTube.
+
+Switch the tool on and every `/watch` page opens with the video filling the
+viewport.
+
+**Shift+F** leaves and re-enters; **Escape** leaves. There is deliberately
+nothing in the player's control bar: a toggle lived there for a while — as an
+icon, then as a switch shaped like the player's own autoplay control — and every
+version of it either outweighed the icons it sat among or sat a few pixels off
+their line. The bar is Google's, it is rebuilt without warning, and a control
+that never looks quite native is worse than no control.
+
+What cinema does owe the viewer is a way home: hiding the masthead hides the
+YouTube logo with it. So it puts one back — a left arrow over the video's top
+left corner, where Netflix keeps its own, appearing and fading with the player's
+own controls and going to youtube.com. It exists only while the video is filling
+the window; the moment it isn't, the masthead is back and the arrow is not.
+
+Two settings sit on top of that button, and they are two switches rather than one
+either/or because they are not alternatives:
+
+| Setting           | On                                                     | Off                                                     |
+| ----------------- | ------------------------------------------------------ | ------------------------------------------------------- |
+| **Every video**   | A watch page opens with the window already filled.     | It opens as YouTube drew it, until you press Shift+F.   |
+| **Shift+F hotkey**| **Shift+F** toggles cinema and **Escape** leaves it.   | The keys are YouTube's again — an F reaches its own fullscreen. |
+
+They are two switches rather than one either/or because they are not
+alternatives. Turning both off, though, leaves the tool with nothing to act on:
+no keys, and nothing that starts by itself. That combination is a way of parking
+the tool without switching it off, and not much else.
+
+`f` still does what it always did. Entering native fullscreen drops cinema
+entirely, so YouTube's own fullscreen layout is the only thing positioning the
+player; leaving fullscreen puts cinema back, rather than dumping you in a grid
+you never asked to see.
+
+**One rule does the work.** `#movie_player` is pinned to `inset: 0` above
+YouTube's own fixed masthead. Nothing is relayouted — the grid the player came
+out of is still there, behind an opaque player — and that is what keeps the tool
+from having an opinion about a layout Google rewrites every few months. What
+`cinema.css` hides (masthead, guide, `#below`, `#secondary`) is belt and braces:
+it stops the page scrolling and stops YouTube drawing over the video, but the
+video is full-size without any of it.
+
+Two details are where this kind of thing usually breaks. The player writes the
+video's box as inline pixels, measured for a grid cell it is no longer in, so the
+stylesheet overrides that with a percentage box and `object-fit: contain` — which
+letterboxes a 4:3 video exactly as fullscreen does instead of stretching it. And
+`position: fixed` is measured against the nearest ancestor with a transform, a
+filter or containment rather than against the viewport, so every ancestor between
+`ytd-app` and the player has all three cleared; without that the player drops
+back into the page the moment YouTube animates a route change.
+
+The selector is scoped under `ytd-watch-flexy` for one reason: the same
+`#movie_player` element is reparented into `ytd-miniplayer` when the miniplayer
+opens, and a miniplayer pinned to `inset: 0` is not a miniplayer.
+
 ## The web app
 
 A dashboard shell plus one tool, served as a Cloudflare Worker. It exists because
@@ -255,8 +323,9 @@ apps/chrome-extension/src/
       definition.ts  the registry entry
       constants.ts   the tool id, and nothing else — see below
       api.ts         the lolesports client, its caches, and its config
+      wiki.ts        Leaguepedia, for the seeds Riot's API doesn't carry
       panel.ts       the schedule screen, and routing to the one below
-      tournament.ts  standings tables and brackets
+      tournament.ts  standings tables, and brackets down to what an empty slot says
     task-namer/
       definition.ts  the registry entry
       constants.ts   the tool id, the message names, and where Replace is offered
@@ -277,6 +346,14 @@ apps/chrome-extension/src/
     theme.ts       puts the appearance on screen (the value lives in common/)
     style.css      the palette, and what utilities can't say
 ```
+
+**No decorative separators.** A `·` or a ` • ` between two facts says nothing
+about how they relate, so nothing here uses one: a hierarchy gets a chevron
+(`LCK → Knockouts → Semifinals` on a fixture card, an icon between real spans),
+and everything else gets the word or the punctuation that fits — "Hồ Chí Minh
+**ngày** Thứ Bảy 15/08/2026", "$0.0012 of $5.00 used **(free tier)**". Same
+decision as `.agents/reviews/2026-08-10/08-replace-web-middot-separators.md`,
+which settled it for the web app first.
 
 **Styling is Tailwind utilities**, written onto the elements in the TypeScript
 that builds them. `style.css` is the entry: design tokens, a few base rules, and
@@ -310,7 +387,8 @@ setting would mean an async hop before the card can appear — to theme a surfac
 that is on screen for ten seconds.
 
 **Two kinds of tool.** Most act on a page and ship a declared content script —
-Pinterest Dark/Light on `pinterest.com`, Task Name Translator everywhere. A tool
+Pinterest Dark/Light on `pinterest.com`, YouTube Cinema on `youtube.com`, Task
+Name Translator everywhere. A tool
 can instead draw its own view inside the popup, as T1 Esports Tracker does, by
 setting `hasPanel` and registering a renderer in `src/popup/tool-ui.ts`.
 
@@ -452,6 +530,7 @@ Run every one of these from the repo root.
 | `bun run preview`           | Screenshot real Pinterest pages with the theme applied, into `.preview/`. |
 | `bun run preview:popup`     | Drive the built popup in headless Chrome and check the dashboard, into `.preview/`. |
 | `bun run preview:task-name` | Drive the task-name card through its three states over a hostile host page. |
+| `bun run preview:youtube`   | Screenshot real YouTube watch pages in cinema mode, and check the player is the viewport. |
 
 ### The web app
 
@@ -481,9 +560,12 @@ registry, the switches and detail view work, both persist the state shape
 content scripts read back, and the appearance control stamps, clears and
 remembers `data-theme`. It also drives the T1 tool end to end: off (and
 silent — it asserts zero requests), the schedule cards, the tournament list,
-a standings table, a bracket with its connectors, the widening and the way
-back, then a failed refresh over a stale cache and an outage with nothing
-cached.
+the round appended to a fixture that is in one, a standings table, a bracket
+with its connectors, the widening and the way
+back, then the same view over a bracket nobody has qualified for yet — first
+with Leaguepedia off, then switched on so the seeds appear, then with the wiki
+answering 503 to prove the bracket doesn't care — and finally a failed refresh
+over a stale cache and an outage with nothing cached.
 
 It drives **Dò vé số** the same way, over a stubbed xskt.com.vn: off and silent
 (zero requests asserted), the searchable province picker, the exact URL it asks
@@ -520,6 +602,33 @@ and Google Sheets specifically — its grid is a canvas with its own right-click
 menu, so both the selection and the native menu only exist inside a cell editor.
 Those need Load unpacked and a human.
 
+`bun run preview:youtube` runs the built tool — the stylesheet *and* the bundle
+out of `extension/dist` — over two real watch pages, against a
+`chrome.storage.sync` stand-in the harness flips the switch and both settings in.
+Nothing in it reimplements the tool: every attribute, button and keystroke it
+checks is the shipped content script's own.
+
+It asserts the stylesheet alone changes nothing until the bundle runs, then that
+the player ends up exactly the size of the viewport, the masthead and everything
+below the video are gone, the control bar spans the window, and the page cannot
+scroll. One of the two pages is 4:3 for a single assertion: that the video
+letterboxes rather than stretches, the one failure that would be worse than the
+small player it replaced.
+
+The rest is the ways in and out, each under real input rather than a
+`element.click()`: the way home sitting over the top left, fading with the
+player's own controls, leaving with cinema and — under a real mouse press —
+reaching youtube.com; Shift+F leaving cinema and bringing YouTube's own layout
+and masthead back intact, then returning; Shift+F
+and Escape doing the same from the keyboard, `f` still giving real fullscreen —
+with cinema standing down and the toggle hiding itself while it lasts, and both
+coming back on exit — either setting being off leaving the button working anyway,
+and the tool's own switch going off taking the attribute and the button with it
+without a reload.
+
+What it can't reach: manifest parsing, and a client-side route change from a
+related video. Those need Load unpacked and a human.
+
 `bun run icons` is the same trick pointed at artwork: `assets/icon.svg` is the
 source of truth, and each size is rendered from the vector by the engine that
 will draw it in the toolbar rather than downsampled from one raster. It reads
@@ -527,9 +636,12 @@ every file back afterwards and samples it, because the failure that matters —
 opaque corners on a rounded-square icon — is invisible until it is in a
 toolbar.
 
-The bracket fixture is EWC 2026 Group C copied field for field from the live
-response, `origin.structuralId` included, so the connector logic is checked
-against a real double-elimination group rather than something invented.
+The bracket fixtures are copied field for field from live responses,
+`origin` included, so the connectors and the slot labels are checked against
+real brackets rather than something invented: EWC 2026 Group C for a group that
+has been played out, and LCK Split 3 2026's Play-Ins and Regional Championship
+for one that has not — where every slot is still TBD and the labels are all
+there is to read.
 
 Everything is stubbed there so live results can't move under the assertions,
 which means the checks prove the tool's behaviour but not that the real
@@ -555,7 +667,15 @@ Those need Load unpacked and a human.
 >
 > • **T1 Esports Tracker** — T1's upcoming League of Legends matches and recent
 > results, shown in your own timezone, plus the group stage or bracket of every
-> tournament they're in. It's off until you switch it on.
+> tournament they're in. A fixture in a bracket says which round it is, which
+> the schedule alone never does — it names the stage and stops, so "Knockouts"
+> becomes "Knockouts → Semifinals". A play-in or playoff bracket is drawn up long before
+> anyone qualifies for it, so every empty slot says what will fill it — a seed,
+> the winner or loser of an earlier round, or a team still to come out of the
+> group stage. Switch on **Read Leaguepedia for seeding** and those slots get
+> the wiki's own answer instead — "Rise #1", "Seed 5/6" — along with the teams
+> that already have a place in the stage. It's off until you switch it on, and
+> so is the wiki read.
 >
 > • **Task Name Translator** — select any text, in Vietnamese or English, press
 > the button that appears, and get one properly written English task title back,
@@ -569,6 +689,15 @@ Those need Load unpacked and a human.
 > it tells you what you won, with the matching numbers highlighted in the full
 > draw. Covers all 35 southern and central provinces. It's off until you switch
 > it on.
+>
+>
+> • **YouTube Cinema** — a watch page where the video actually fills the window.
+> Nothing over it, nothing under it, and no need for fullscreen, so you keep your
+> tabs, your toolbar and your menu bar. Shift+F gives the normal page back when
+> you want to read the comments, and while the video is filling the window
+> there's an arrow in the top corner that takes you back to YouTube, since the
+> usual logo isn't there to. `f` still gets you real fullscreen. It's off until
+> you switch it on, and it touches nothing but a watch page.
 >
 > One appearance control, in the toolbar popup: follow your system, or pin
 > everything to light or dark.
@@ -586,7 +715,9 @@ Those need Load unpacked and a human.
 | content script on `http(s)://*/*`      | Task Name Translator's button over a selection, and its popover. It cannot listen for a selection on a page it is not on. This is what Chrome describes as "read and change all your data on all websites"; the script holds no key, makes no request, and does nothing at all while the tool is off. |
 | `scripting` + `activeTab`              | Only to cover tabs that were already open when the extension was installed or reloaded — Chrome does not retro-inject a content script into those. |
 | `https://*.pinterest.com/*`            | The Pinterest theme's content script and stylesheet.                      |
+| `https://www.youtube.com/*`            | YouTube Cinema's content script and stylesheet. It reads no data and makes no request; on anything but a watch page it does nothing at all. |
 | `https://esports-api.lolesports.com/*` | T1's schedule. Only requested once the tracker is switched on.            |
+| `https://lol.fandom.com/*`             | Leaguepedia, for which seed each empty bracket slot is for. Off by default; one request per tournament you open, cached for a day. |
 | `https://static.lolesports.com/*`      | Team logos in the tracker's list.                                         |
 | `https://openrouter.ai/*`              | The task-title call, on your own key, on the click that asks for it.      |
 | `https://xskt.com.vn/*`                | The lottery draw pages. Only requested once **Dò vé số** is switched on, and only for the province and date you ask for. |

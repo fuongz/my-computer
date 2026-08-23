@@ -174,7 +174,7 @@ function renderForm(token: number, result: HTMLElement): HTMLElement {
 		note.className = problem?.warn ? NOTE_WARN : NOTE_HINT;
 		note.textContent = problem
 			? problem.message
-			: `${provinceName(form.slug)} · ${describeDate(form.date)}`;
+			: `${provinceName(form.slug)} ngày ${describeDate(form.date)}`;
 		return problem === null;
 	};
 
@@ -515,7 +515,7 @@ function drawTable(draw: Draw, ticket: string, outcome: Score): HTMLElement {
 		el(
 			"h3",
 			"xs-draw-title text-[11px] font-semibold tracking-wide text-muted uppercase",
-			`Kết quả ${abbreviation(draw.slug)} · ${describeDate(draw.date)}`,
+			`Kết quả ${abbreviation(draw.slug)} ngày ${describeDate(draw.date)}`,
 		),
 	);
 

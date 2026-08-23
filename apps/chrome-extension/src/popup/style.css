@@ -601,6 +601,14 @@
 		stroke: var(--accent);
 		stroke-width: 2;
 	}
+
+	/*
+	 * A loser's drop into the lower bracket. Solid, it reads as the same team
+	 * advancing twice — every lower-bracket round is fed by one of these.
+	 */
+	.t1-line-loser {
+		stroke-dasharray: 3 3;
+	}
 }
 
 /*

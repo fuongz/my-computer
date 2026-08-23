@@ -227,11 +227,19 @@ function showDetail(toolId: string): void {
 		}),
 	);
 
+	// A setting can change what a panel would draw — the T1 tracker's seeding
+	// read is one — and the panel is above the settings, so it has to be told.
+	const redraw = () => {
+		if (panel && panelHost) panel(panelHost, isEnabled(tool.id));
+	};
+
 	if (panel && panelHost) {
 		detail.append(panelHost);
 		panel(panelHost, isEnabled(tool.id));
 	}
-	detail.append(...tool.settings.map((setting) => renderSetting(tool, setting)));
+	detail.append(
+		...tool.settings.map((setting) => renderSetting(tool, setting, redraw)),
+	);
 
 	if (tool.settings.length > 0) {
 		detail.append(
@@ -252,6 +260,7 @@ function showDetail(toolId: string): void {
 function renderSetting(
 	tool: ToolDefinition,
 	setting: ToolSetting,
+	afterChange?: () => void,
 ): HTMLElement {
 	const block = el("div", "setting flex flex-col gap-[7px]");
 	block.append(
@@ -269,6 +278,7 @@ function renderSetting(
 				const state = states[tool.id];
 				if (state) state.settings[setting.key] = value;
 				void setToolSetting(tool.id, setting.key, value);
+				afterChange?.();
 			},
 		}),
 	);

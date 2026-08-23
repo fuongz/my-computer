@@ -47,13 +47,19 @@ const LEAGUES = [
 const SCHEDULE_CACHE_KEY = "fz.t1.cache.v1";
 const LEAGUE_CACHE_KEY = "fz.t1.leagues.v1";
 const TOURNAMENT_CACHE_KEY = "fz.t1.tournaments.v1";
-const STANDINGS_CACHE_KEY = "fz.t1.standings.v1";
+/*
+ * v2: a bracket team carries its whole `origin` and a `tbd` flag, where v1 kept
+ * only the id of the match it came from. An entry in the old shape would draw a
+ * bracket with no slot labels and no connectors, so the key moves rather than
+ * the reader growing a fallback for a blob that expires in ten minutes anyway.
+ */
+const STANDINGS_CACHE_KEY = "fz.t1.standings.v2";
 
 /** How old a cached list may be before opening the panel refreshes it. */
 const CACHE_TTL_MS = 10 * 60 * 1000;
 
-/** Reference data — badges and tournament date ranges — barely moves. */
-const REFERENCE_TTL_MS = 24 * 60 * 60 * 1000;
+/** Reference data — badges, tournament date ranges, wiki seeds — barely moves. */
+export const REFERENCE_TTL_MS = 24 * 60 * 60 * 1000;
 
 /** How many rows each half of the schedule shows. */
 const UPCOMING_LIMIT = 5;
@@ -123,20 +129,45 @@ export interface RankingRow {
 	losses: number;
 }
 
+/**
+ * Where a bracket slot's team comes from — the API's own account of it, kept
+ * whole because the three kinds mean three different things on screen.
+ *
+ * `match`         an earlier match in this section, `slot` saying which end of
+ *                 it: 1 is the winner, 2 is the loser. Checked against every
+ *                 resolved edge the six tracked leagues have played — 176 of
+ *                 them, no exceptions.
+ * `seeding`       a numbered seed, and `slot` is that number: seed 1 is the one
+ *                 with the deepest bye.
+ * `decisionPoint` a slot filled by something decided later — a team qualifying
+ *                 out of an earlier stage, or one placed by a draw or by a
+ *                 seed's own choice of opponent. Here `slot` is a position
+ *                 within that decision, *not* a seed: LCK Split 3 2025 put its
+ *                 top two seeds in slots 5 and 6.
+ */
+export interface BracketOrigin {
+	kind: "match" | "seeding" | "decisionPoint";
+	/** The earlier match for `match`; the decision's own id otherwise. */
+	structuralId: string;
+	slot: number;
+}
+
 export interface BracketTeam extends StandingTeam {
 	score: number;
 	won: boolean;
 	/**
-	 * Which earlier match this team arrived from, as that match's
-	 * `structuralId`. Empty for a seeded team, which is what the first round of
-	 * any bracket is made of.
+	 * Whether the API is still calling this slot TBD. Read off its own
+	 * placeholder team rather than the code, which a real team could collide
+	 * with and which says nothing about why the slot is empty.
 	 */
-	fromMatch: string;
+	tbd: boolean;
+	/** Null only if the API stops sending an origin, which it never has. */
+	origin: BracketOrigin | null;
 }
 
 export interface BracketMatch {
 	id: string;
-	/** Stable within a section; what {@link BracketTeam.fromMatch} points at. */
+	/** Stable within a section; what a `match` {@link BracketOrigin} points at. */
 	structuralId: string;
 	state: string;
 	teams: BracketTeam[];
@@ -170,6 +201,48 @@ export interface Standings {
 	tournamentId: string;
 	stages: StandingsStage[];
 	fetchedAt: number;
+}
+
+/** Where one fixture sits in a tournament's brackets. */
+export interface BracketPosition {
+	/** The section it is in, or its stage when the section is unnamed. */
+	stage: string;
+	/** The round inside that: "Semifinals", "Upper Bracket - Round 2". */
+	round: string;
+}
+
+/**
+ * Match id → where that match sits in this tournament's brackets.
+ *
+ * The schedule and the standings share one id space — checked against T1's own
+ * KeSPA Cup run, where the three bracket fixtures resolve to Play-Ins Round 1,
+ * Play-Ins Round 2 and the Semifinals — so a fixture can be told which round it
+ * is without the schedule endpoint ever saying. It only says the stage
+ * ("Knockouts"), which is the part that was already on the card.
+ *
+ * Group sections have no rounds and contribute nothing.
+ */
+export function bracketPositions(
+	standings: Standings,
+): Map<string, BracketPosition> {
+	const positions = new Map<string, BracketPosition>();
+
+	for (const stage of standings.stages) {
+		for (const section of stage.sections) {
+			for (const column of section.columns) {
+				for (const round of column.rounds) {
+					for (const match of round.matches) {
+						if (!match.id) continue;
+						positions.set(match.id, {
+							stage: section.name || stage.name,
+							round: round.name,
+						});
+					}
+				}
+			}
+		}
+	}
+	return positions;
 }
 
 /* --- the schedule ----------------------------------------------------- */
@@ -452,18 +525,21 @@ function normaliseSections(raw: unknown): StandingsSection[] {
 		sections.push({
 			name: asText(entry["name"]),
 			// Trust the API's own word for it, and fall back to whichever half
-			// actually came back with something.
-			kind:
-				entry["type"] === "group" || entry["type"] === "bracket"
-					? entry["type"]
-					: rankings.length > 0
-						? "group"
-						: "bracket",
+			// actually came back with something. `crossGroup` is the KeSPA Cup
+			// and LCK Cup shape — one table per group, ranked across both — and
+			// reads as a table like any other group.
+			kind: sectionKind(entry["type"], rankings.length),
 			rankings,
 			columns,
 		});
 	}
 	return sections;
+}
+
+function sectionKind(type: unknown, rankings: number): StandingsSection["kind"] {
+	if (type === "group" || type === "crossGroup") return "group";
+	if (type === "bracket") return "bracket";
+	return rankings > 0 ? "group" : "bracket";
 }
 
 function normaliseRankings(raw: unknown): RankingRow[] {
@@ -524,17 +600,33 @@ function bracketMatch(raw: unknown): BracketMatch | null {
 		state: asText(raw["state"]),
 		teams: teams.map((team): BracketTeam => {
 			const result = read(team, "result");
-			const origin = read(team, "origin");
+			const entry = isRecord(team) ? team : {};
 			return {
 				...standingTeam(team),
 				score: asCount(result?.["gameWins"]),
 				won: result?.["outcome"] === "win",
-				// `seeding` means the team entered here rather than arriving from
-				// an earlier match, so there is no line to draw.
-				fromMatch:
-					origin?.["type"] === "match" ? asText(origin["structuralId"]) : "",
+				// The API's placeholder team, which it gives an id of "0" and a
+				// slug of "tbd". Its `code` is "TBD" too, but a code is a team's
+				// to choose and this is not.
+				tbd: asText(entry["id"]) === "0" || asText(entry["slug"]) === "tbd",
+				origin: bracketOrigin(entry["origin"]),
 			};
 		}),
+	};
+}
+
+/** An origin, or null for anything that isn't one of the three known kinds. */
+function bracketOrigin(raw: unknown): BracketOrigin | null {
+	if (!isRecord(raw)) return null;
+
+	const kind = raw["type"];
+	if (kind !== "match" && kind !== "seeding" && kind !== "decisionPoint") {
+		return null;
+	}
+	return {
+		kind,
+		structuralId: asText(raw["structuralId"]),
+		slot: asCount(raw["slot"]),
 	};
 }
 
@@ -691,6 +783,13 @@ async function readCache(key: string): Promise<unknown> {
 	return (await readEntry(key))?.value;
 }
 
+/*
+ * Exported as {@link readCachedEntry} for wiki.ts, which stamps each tournament
+ * inside the blob rather than the blob itself: one stamp for all of them would
+ * make opening a second tournament look like a refresh of the first. The write
+ * side is shared, so both halves keep the one `{ at, value }` convention.
+ */
+
 /** As above, but nothing older than `ttl`. */
 async function readFresh(key: string, ttl: number): Promise<unknown> {
 	const entry = await readEntry(key);
@@ -726,6 +825,8 @@ async function writeCache(key: string, value: unknown): Promise<void> {
 }
 
 /* --- narrowing -------------------------------------------------------- */
+
+export { readCache as readCachedEntry, writeCache as writeEntry };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);

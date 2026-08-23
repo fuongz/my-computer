@@ -1,5 +1,5 @@
 /**
- * The one value that crosses a bundle boundary.
+ * The two values that cross a bundle boundary.
  *
  * The tool id is needed by definition.ts — which the registry pulls in, and so
  * every content script does too — and by src/popup/panels.ts. Everything else
@@ -9,3 +9,11 @@
  */
 
 export const T1_TRACKER_ID = "t1-tracker";
+
+/**
+ * The setting that permits the one request outside lolesports.com.
+ *
+ * Named here for the same reason as the id: definition.ts declares the setting
+ * and panel.ts reads it, and neither should have to import the other.
+ */
+export const LEAGUEPEDIA_SETTING = "leaguepedia";

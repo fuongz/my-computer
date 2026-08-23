@@ -13,6 +13,7 @@
 import {
 	Calendar03Icon,
 	DarkModeIcon,
+	MaximizeScreenIcon,
 	TaskEdit01Icon,
 	Ticket01Icon,
 } from "@hugeicons/core-free-icons";
@@ -24,6 +25,7 @@ import { PINTEREST_THEME_ID } from "../tools/pinterest-theme/constants";
 import { T1_TRACKER_ID } from "../tools/t1-tracker/constants";
 import { renderT1Panel } from "../tools/t1-tracker/panel";
 import { TASK_NAMER_ID } from "../tools/task-namer/constants";
+import { YOUTUBE_CINEMA_ID } from "../tools/youtube-cinema/constants";
 
 /** Every tool's mark, from Hugeicons' free Stroke Rounded set. */
 const TOOL_ICONS: Record<string, IconData> = {
@@ -31,6 +33,7 @@ const TOOL_ICONS: Record<string, IconData> = {
 	[T1_TRACKER_ID]: Calendar03Icon,
 	[TASK_NAMER_ID]: TaskEdit01Icon,
 	[LOTTERY_ID]: Ticket01Icon,
+	[YOUTUBE_CINEMA_ID]: MaximizeScreenIcon,
 };
 
 export function getToolIcon(toolId: string): IconData | undefined {

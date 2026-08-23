@@ -1,0 +1,146 @@
+/*
+ * YouTube Cinema — the watch page with the video where the page used to be.
+ *
+ * Every rule is scoped to html[data-fz-youtube-cinema="on"], which content.ts
+ * owns: without the attribute this file is a parsed stylesheet that matches
+ * nothing, which is what "switched off" has to cost.
+ *
+ * One rule does the work. #movie_player is pinned to the viewport, above
+ * YouTube's own fixed masthead, so nothing has to be relayouted to make the
+ * video big — the grid it came out of is still there, behind an opaque player.
+ * Everything under "out of the way" is belt and braces: it stops the page
+ * scrolling and stops YouTube drawing over the player, but the video would be
+ * full-size without any of it.
+ *
+ * The selector is scoped under ytd-watch-flexy on purpose. The same
+ * #movie_player element is reparented into ytd-miniplayer when the miniplayer
+ * opens, and a miniplayer pinned to inset: 0 is not a miniplayer.
+ */
+
+html[data-fz-youtube-cinema="on"],
+html[data-fz-youtube-cinema="on"] body {
+	overflow: hidden !important;
+	background: #000 !important;
+}
+
+/*
+ * position: fixed is measured against the nearest ancestor with a transform,
+ * a filter or containment — not the viewport. YouTube puts all three on these
+ * during route transitions and lazy rendering, and any one of them would drop
+ * the player back into its grid cell at a random moment.
+ */
+html[data-fz-youtube-cinema="on"] ytd-app,
+html[data-fz-youtube-cinema="on"] #content,
+html[data-fz-youtube-cinema="on"] #page-manager,
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy,
+html[data-fz-youtube-cinema="on"] #columns,
+html[data-fz-youtube-cinema="on"] #primary,
+html[data-fz-youtube-cinema="on"] #primary-inner,
+html[data-fz-youtube-cinema="on"] #player,
+html[data-fz-youtube-cinema="on"] #player-container-outer,
+html[data-fz-youtube-cinema="on"] #player-container-inner,
+html[data-fz-youtube-cinema="on"] #player-container,
+html[data-fz-youtube-cinema="on"] #player-theater-container,
+html[data-fz-youtube-cinema="on"] #full-bleed-container,
+html[data-fz-youtube-cinema="on"] ytd-player {
+	transform: none !important;
+	filter: none !important;
+	perspective: none !important;
+	contain: none !important;
+	will-change: auto !important;
+}
+
+/* --- the video, filling the window ----------------------------------- */
+
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player {
+	position: fixed !important;
+	inset: 0 !important;
+	width: 100vw !important;
+	height: 100vh !important;
+	max-width: none !important;
+	max-height: none !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	background: #000 !important;
+	/* Over the masthead (~2020) and every overlay YouTube stacks on top of it. */
+	z-index: 2147483000 !important;
+}
+
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player .html5-video-container,
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player .ytp-cued-thumbnail-overlay {
+	width: 100% !important;
+	height: 100% !important;
+}
+
+/*
+ * The player writes the video's box as inline pixels, measured when it thinks
+ * it is 1280 wide in a grid cell. Overriding it with a percentage box and
+ * object-fit: contain letterboxes exactly as native fullscreen does, so the
+ * frame is right even before YouTube has re-measured anything.
+ */
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player video.video-stream,
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player video.html5-main-video {
+	top: 0 !important;
+	left: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: contain !important;
+}
+
+/* Same story for the control bar, whose width is inline pixels too. */
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player .ytp-chrome-bottom {
+	left: 12px !important;
+	width: calc(100% - 24px) !important;
+}
+
+/* --- out of the way -------------------------------------------------- */
+
+html[data-fz-youtube-cinema="on"] #masthead-container,
+html[data-fz-youtube-cinema="on"] ytd-masthead,
+html[data-fz-youtube-cinema="on"] tp-yt-app-drawer#guide,
+html[data-fz-youtube-cinema="on"] ytd-mini-guide-renderer,
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #secondary,
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #below,
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #chat-container,
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy ytd-watch-metadata,
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #clarify-box,
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #player-ads,
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy ytd-merch-shelf-renderer {
+	display: none !important;
+}
+
+/* --- the way out, top left ------------------------------------------- */
+
+/*
+ * Gated on the attribute, unlike the toggle below: this one only exists while
+ * cinema is on, and it fades with the player's controls by following the class
+ * the player already puts on itself when it hides them.
+ */
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player .fz-cinema-back {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	z-index: 65;
+	width: 48px;
+	height: 48px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	opacity: 1;
+	transition: opacity 0.1s cubic-bezier(0, 0, 0.2, 1);
+}
+
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player .fz-cinema-back svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+	/* It lands on whatever the video is showing, which can be white. */
+	filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.7));
+}
+
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player.ytp-autohide .fz-cinema-back {
+	opacity: 0;
+	pointer-events: none;
+}

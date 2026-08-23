@@ -113,8 +113,8 @@ async function test(): Promise<void> {
 			info.limit === null
 				? `${usd(info.usage)} used, no limit`
 				: `${usd(info.usage)} of ${usd(info.limit)} used`;
-		if (info.freeTier) spend += " · free tier";
-		spend = `${info.label} · ${spend}`;
+		if (info.freeTier) spend += " (free tier)";
+		spend = `${info.label}, ${spend}`;
 	} catch (error) {
 		setStatus(
 			error instanceof OpenRouterError
@@ -127,7 +127,7 @@ async function test(): Promise<void> {
 	setStatus(`Key works — ${spend}. Now trying ${settings.model}…`);
 	try {
 		const title = await toTaskName(settings, PROBE);
-		setStatus(`Works — ${spend} · ${settings.model} wrote: “${title}”`);
+		setStatus(`Works — ${spend}. ${settings.model} wrote: “${title}”`);
 	} catch (error) {
 		setStatus(
 			error instanceof OpenRouterError

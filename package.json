@@ -22,7 +22,8 @@
 		"icons": "bun run --filter @fuongz/chrome-extension icons",
 		"preview": "bun run --filter @fuongz/chrome-extension preview",
 		"preview:popup": "bun run --filter @fuongz/chrome-extension preview:popup",
-		"preview:task-name": "bun run --filter @fuongz/chrome-extension preview:task-name"
+		"preview:task-name": "bun run --filter @fuongz/chrome-extension preview:task-name",
+		"preview:youtube": "bun run --filter @fuongz/chrome-extension preview:youtube"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.3",

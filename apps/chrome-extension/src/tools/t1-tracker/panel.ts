@@ -10,7 +10,10 @@
  * Rendering is cache-first — whatever was stored paints straight away and the
  * network refresh swaps it out underneath, so opening the panel never starts on
  * a spinner once it has been opened before. The tool's on/off switch gates the
- * request itself: while it is off, nothing here touches the network.
+ * request itself: while it is off, nothing here touches the network. The one
+ * request that goes anywhere other than lolesports.com — wiki.ts, for the seeds
+ * an unfilled bracket is waiting on — is gated a second time, by a setting that
+ * is off until asked for.
  *
  * Everything is built with local helpers rather than the popup's, so the tool
  * stays self-contained under src/tools/ and doesn't depend on the shell it is
@@ -21,8 +24,11 @@
 import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
 import { renderIcon } from "../../common/icons";
+import { getToolStates } from "../../common/storage";
 import { menu, type MenuRow } from "../../common/ui";
+import { LEAGUEPEDIA_SETTING, T1_TRACKER_ID } from "./constants";
 import {
+	bracketPositions,
 	fetchSchedule,
 	getLeagueBadges,
 	getStandings,
@@ -31,13 +37,16 @@ import {
 	isStale,
 	readCachedSchedule,
 	splitMatches,
+	type BracketPosition,
 	type LeagueBadges,
 	type MatchTeam,
 	type T1Match,
 	type T1Schedule,
 	type Tournament,
 } from "./api";
+import { relative } from "./time";
 import { renderStandings } from "./tournament";
+import { getWikiSeeding, type WikiSeeding } from "./wiki";
 
 /*
  * Class strings shared between call sites, or picked between by a conditional.
@@ -195,6 +204,8 @@ async function loadTournaments(
 	known = tournaments;
 	if (token !== renderToken || tournaments.length === 0) return;
 
+	void loadRounds(host, token, matches, tournaments);
+
 	const block = el("div", "t1-section");
 	block.append(el("h3", SECTION_TITLE, "Tournaments"));
 	block.append(
@@ -205,6 +216,74 @@ async function loadTournaments(
 		),
 	);
 	slot.replaceChildren(block);
+}
+
+/**
+ * Say which round of a bracket each fixture is in.
+ *
+ * The schedule endpoint names the stage — "Knockouts", "Play In Knockouts" —
+ * and stops there, so a card can say a match was in the Knockouts but not that
+ * it was the semifinal. The standings know, and they share the schedule's match
+ * ids, so this asks for the standings of the tournaments actually on screen and
+ * fills the round in behind the cards.
+ *
+ * Behind them on purpose: the fixtures are the point of this screen and must
+ * never wait on a second round of requests. Costs one request per tournament
+ * being shown, cached for ten minutes, and the same cache the tournament view
+ * reads — so opening one straight afterwards is free.
+ */
+async function loadRounds(
+	host: HTMLElement,
+	token: number,
+	matches: T1Match[],
+	tournaments: Tournament[],
+): Promise<void> {
+	const showing = new Set<string>();
+	for (const match of matches) {
+		const tournament = tournamentForMatch(match, tournaments);
+		if (tournament) showing.add(tournament.id);
+	}
+	if (showing.size === 0) return;
+
+	// Three is already more than a schedule has ever shown at once; the cap is
+	// there so a strange schedule cannot turn this into a crawl.
+	const positions = new Map<string, BracketPosition>();
+	await Promise.all(
+		[...showing].slice(0, 3).map(async (id) => {
+			try {
+				for (const [matchId, position] of bracketPositions(
+					await getStandings(id),
+				)) {
+					positions.set(matchId, position);
+				}
+			} catch {
+				// One tournament's standings failing costs that tournament's
+				// rounds and nothing else.
+			}
+		}),
+	);
+	if (token !== renderToken) return;
+
+	for (const match of matches) {
+		const position = positions.get(match.id);
+		if (!position) continue;
+
+		const card = host.querySelector(`.t1-card[data-match-id="${match.id}"]`);
+		const comp = card?.querySelector(".t1-card-comp");
+		if (!comp) continue;
+
+		// Appended rather than substituted: the stage is what tells two "Round 1"s
+		// apart, and it is already there in the schedule's own words.
+		comp.replaceWith(
+			competition([match.league, match.block, position.round]),
+		);
+
+		const open = card?.querySelector(".t1-card-open");
+		const label = open?.getAttribute("aria-label");
+		if (open && label) {
+			open.setAttribute("aria-label", `${position.round}. ${label}`);
+		}
+	}
 }
 
 function tournamentRow(
@@ -243,12 +322,19 @@ async function openTournament(
 	host.replaceChildren(view);
 
 	try {
-		const standings = await getStandings(tournament.id);
+		// Asked for together: the wiki read is a 24-hour cache hit on all but the
+		// first open of a tournament, and it carries its own timeout, so waiting
+		// for it costs a moment once a day rather than a second render and a view
+		// that jumps under the pointer.
+		const [standings, seeding] = await Promise.all([
+			getStandings(tournament.id),
+			seedingFor(tournament),
+		]);
 		if (token !== renderToken) return;
 
 		view.replaceChildren(
 			tournamentHeader(host, token, tournament, badges),
-			renderStandings(standings),
+			renderStandings(standings, seeding),
 		);
 	} catch {
 		if (token !== renderToken) return;
@@ -256,6 +342,25 @@ async function openTournament(
 			tournamentHeader(host, token, tournament, badges),
 			placeholder("Couldn't load this tournament."),
 		);
+	}
+}
+
+/**
+ * The wiki's seeds for this tournament, if they have been asked for.
+ *
+ * The setting is read here, next to the request it permits, rather than at the
+ * panel's entry point: it is off by default, and switching it on re-renders the
+ * panel, so the next open asks again without anything having to remember.
+ */
+async function seedingFor(tournament: Tournament): Promise<WikiSeeding | null> {
+	try {
+		const states = await getToolStates();
+		const wanted =
+			states[T1_TRACKER_ID]?.settings[LEAGUEPEDIA_SETTING] === "on";
+		return wanted ? await getWikiSeeding(tournament) : null;
+	} catch {
+		// A blocked storage read is not a reason to fail the bracket.
+		return null;
 	}
 }
 
@@ -325,6 +430,8 @@ function card(match: T1Match, context: CardContext): HTMLLIElement {
 		"t1-card overflow-hidden rounded-lg border border-transparent bg-surface shadow-rest transition hover:shadow-raised data-[state=inProgress]:border-live/45",
 	);
 	item.dataset["state"] = match.state;
+	// So the round this match turns out to be in can find its own card later.
+	item.dataset["matchId"] = match.id;
 	if (match.state === "completed") {
 		const t1 = home.isT1 ? home : away;
 		const other = home.isT1 ? away : home;
@@ -354,11 +461,7 @@ function card(match: T1Match, context: CardContext): HTMLLIElement {
 			"t1-league-badge grid h-5 w-5 place-items-center rounded-full bg-logo p-px",
 			"h-full w-full object-contain",
 		),
-		el(
-			"span",
-			"t1-card-comp text-center font-semibold",
-			[match.league, match.block].filter(Boolean).join(" • "),
-		),
+		competition([match.league, match.block]),
 		el(
 			"span",
 			"t1-card-bo font-bold tracking-wide",
@@ -406,6 +509,36 @@ async function openFor(context: CardContext, match: T1Match): Promise<void> {
 	if (tournament) {
 		void openTournament(context.host, context.token, tournament, context.badges);
 	}
+}
+
+/**
+ * The competition, its stage, and the round inside that — as a breadcrumb.
+ *
+ * A chevron between them rather than a bullet: these three are not a list of
+ * equals, they narrow. LCK, then the Knockouts, then the semifinal — and the
+ * mark that says "into" is the one the tournament rows already use for it.
+ * Repeats are dropped, because a stage and its round are sometimes the same
+ * word and "Finals • Finals" says nothing twice.
+ */
+function competition(parts: string[]): HTMLElement {
+	const line = el(
+		"span",
+		"t1-card-comp flex flex-wrap items-center justify-center gap-1 font-semibold",
+	);
+
+	const steps = parts
+		.filter(Boolean)
+		.filter((part, at, all) => all.indexOf(part) === at);
+
+	for (const [at, part] of steps.entries()) {
+		if (at > 0) {
+			const step = el("span", "t1-card-step flex-none opacity-45");
+			step.append(renderIcon(ArrowRight01Icon, "h-3 w-3"));
+			line.append(step);
+		}
+		line.append(el("span", undefined, part));
+	}
+	return line;
 }
 
 /** The left column: when it starts, or that it is on right now. */
@@ -502,24 +635,12 @@ const MONTH = new Intl.DateTimeFormat(undefined, {
 	day: "numeric",
 	month: "short",
 });
-const RELATIVE = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
 
 function dateRange(tournament: Tournament): string {
 	const from = Date.parse(`${tournament.startDate}T00:00:00Z`);
 	const to = Date.parse(`${tournament.endDate}T00:00:00Z`);
 	if (!Number.isFinite(from) || !Number.isFinite(to)) return "";
 	return `${MONTH.format(from)} – ${MONTH.format(to)}`;
-}
-
-/** "in 6 days", "2 hours ago", "yesterday" — coarsest unit that still reads. */
-function relative(epochMs: number): string {
-	const minutes = Math.round((epochMs - Date.now()) / 60_000);
-	if (Math.abs(minutes) < 60) return RELATIVE.format(minutes, "minute");
-
-	const hours = Math.round(minutes / 60);
-	if (Math.abs(hours) < 24) return RELATIVE.format(hours, "hour");
-
-	return RELATIVE.format(Math.round(hours / 24), "day");
 }
 
 /* --- dom -------------------------------------------------------------- */

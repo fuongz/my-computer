@@ -7,9 +7,11 @@
   "host_permissions": [
     "https://*.pinterest.com/*",
     "https://esports-api.lolesports.com/*",
+    "https://lol.fandom.com/*",
     "https://static.lolesports.com/*",
     "https://openrouter.ai/*",
-    "https://xskt.com.vn/*"
+    "https://xskt.com.vn/*",
+    "https://www.youtube.com/*"
   ],
   "icons": {
     "16": "assets/icons/icon-16.png",
@@ -21,6 +23,13 @@
       "matches": ["https://*.pinterest.com/*"],
       "css": ["dist/tools/pinterest-theme.css"],
       "js": ["dist/tools/pinterest-theme.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "css": ["dist/tools/youtube-cinema.css"],
+      "js": ["dist/tools/youtube-cinema.js"],
       "run_at": "document_start",
       "all_frames": false
     },

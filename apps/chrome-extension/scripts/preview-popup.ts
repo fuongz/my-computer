@@ -218,11 +218,20 @@ const FETCH_SHIM = `
     const seat = (code, wins, outcome, from, slot) => ({
       code, name: code, image: logo(code),
       result: { outcome, gameWins: wins },
+      // A seat with no earlier match behind it entered on a seed, and its slot
+      // number is that seed — 1 being the one with the deepest bye.
       origin: from
         ? { type: 'match', structuralId: from, slot }
-        : { type: 'seeding', slot: 1 },
+        : { type: 'seeding', slot },
     });
-    const bout = (id, teams) => ({ id, structuralId: id, state: 'completed', teams });
+    /*
+     * The third argument is the schedule's own match id, for the one bout that
+     * is also a fixture on the cards — which is how that card learns it was
+     * the final.
+     */
+    const bout = (id, teams, at) => ({
+      id: at || id, structuralId: id, state: 'completed', teams,
+    });
     const round = (name, matches) => ({ name, slug: name, matches });
     const seed = (code, name, wins, losses) => ({
       code, name, image: logo(code), record: { wins, ties: 0, losses },
@@ -239,12 +248,12 @@ const FETCH_SHIM = `
       { name: 'Group Stage', slug: 'group_stage', sections: [ {
         name: 'Group C', type: 'bracket', rankings: [], columns: [
           { cells: [ round('Upper Bracket - Semifinals', [
-            bout('ub1', [seat('BLG', 1, 'win'), seat('MKOI', 0, 'loss')]),
-            bout('ub2', [seat('GAM', 0, 'loss'), seat('T1', 1, 'win')]),
+            bout('ub1', [seat('BLG', 1, 'win', null, 1), seat('MKOI', 0, 'loss', null, 2)]),
+            bout('ub2', [seat('GAM', 0, 'loss', null, 4), seat('T1', 1, 'win', null, 3)]),
           ]) ] },
           { cells: [
             round('Finals', [
-              bout('f1', [seat('T1', 0, 'loss', 'ub2', 1), seat('BLG', 1, 'win', 'ub1', 1)]),
+              bout('f1', [seat('T1', 0, 'loss', 'ub2', 1), seat('BLG', 1, 'win', 'ub1', 1)], 'm5'),
             ]),
             round('Lower Bracket - Semifinals', [
               bout('lb1', [seat('GAM', 2, 'win', 'ub2', 2), seat('MKOI', 1, 'loss', 'ub1', 2)]),
@@ -256,6 +265,170 @@ const FETCH_SHIM = `
         ],
       } ] },
     ] } ] } };
+
+    /*
+     * The second tournament: a bracket drawn up before anyone is in it, which
+     * is the state a play-in or a playoff bracket spends most of a split in.
+     *
+     * The two tables are KeSPA Cup 2026's, kept for their crossGroup type —
+     * a third section type the API answers with, which the renderer has to
+     * place without being told. The brackets are LCK Split 3 2026's Play-Ins
+     * and Regional Championship as the API served them on 2026-08-23: the whole
+     * shape, every slot still TBD, and both things a decisionPoint can mean —
+     * the six slots the group stage feeds this bracket through, and the two the
+     * upper bracket's own losers are later placed into. Structural ids are
+     * shortened for reading; the linkage between them is not touched.
+     */
+    const empty = (kind, pool, slot) => ({
+      id: '0', slug: 'tbd', name: 'TBD', code: 'TBD',
+      image: 'https://static.lolesports.com/teams/team-tbd.png',
+      result: null,
+      origin: { type: kind, structuralId: pool, slot },
+    });
+    const enters = (pool, slot) => empty('decisionPoint', pool, slot);
+    const winner = (from) => empty('match', from, 1);
+    const loser = (from) => empty('match', from, 2);
+    const slate = (id, teams) => ({ id, structuralId: id, state: 'unstarted', teams });
+
+    const PRE_SCHEDULED = { data: { standings: [ { stages: [
+      { name: 'Group Stage', slug: 'group_stage', sections: [
+        { name: 'Alpha Group', type: 'crossGroup', columns: [], rankings: [
+          { ordinal: 1, teams: [seed('NS', 'NONGSHIM RED FORCE', 4, 1)] },
+          { ordinal: 2, teams: [seed('DNS', 'DN SOOPers', 2, 3)] },
+          { ordinal: 3, teams: [seed('GEN', 'Gen.G Esports', 2, 3)] },
+          { ordinal: 4, teams: [seed('KRX', 'KIWOOM DRX', 2, 3)] },
+          { ordinal: 5, teams: [seed('DK', 'Dplus KIA', 0, 5)] },
+        ] },
+        { name: 'Omega Group', type: 'crossGroup', columns: [], rankings: [
+          { ordinal: 1, teams: [seed('HLE', 'Hanwha Life Esports', 4, 1)] },
+          { ordinal: 2, teams: [seed('T1', 'T1', 4, 1)] },
+          { ordinal: 3, teams: [seed('BRO', 'HANJIN BRION', 3, 2)] },
+          { ordinal: 4, teams: [seed('BFX', 'BNK FEARX', 2, 3)] },
+          { ordinal: 5, teams: [seed('KT', 'kt Rolster', 2, 3)] },
+        ] },
+      ] },
+      { name: 'Play-Ins', slug: 'play_ins', sections: [ {
+        name: 'Play-Ins', type: 'bracket', rankings: [], columns: [
+          { cells: [ round('Round 1', [
+            slate('pi-a', [enters('from-groups', 1), enters('from-groups', 2)]),
+            slate('pi-b', [enters('from-groups', 3), enters('from-groups', 4)]),
+          ]) ] },
+          // The loser of the first match, against the winner of the second —
+          // the LCK's own shape, and the reason a loser edge needs drawing.
+          { cells: [ round('Round 2', [
+            slate('pi-c', [loser('pi-a'), winner('pi-b')]),
+          ]) ] },
+        ],
+      } ] },
+      { name: 'Regional Championship', slug: 'regional_championship', sections: [ {
+        name: 'Regional Championship', type: 'bracket', rankings: [], columns: [
+          { cells: [ round('Round 1', [
+            slate('r1a', [enters('seeds', 1), enters('seeds', 2)]),
+            slate('r1b', [enters('seeds', 3), enters('seeds', 4)]),
+          ]) ] },
+          { cells: [
+            round('Upper Bracket - Round 2', [
+              slate('ub2a', [enters('seeds', 5), winner('r1a')]),
+              slate('ub2b', [enters('seeds', 6), winner('r1b')]),
+            ]),
+            round('Lower Bracket - Round 1', [
+              slate('lb1', [loser('r1a'), loser('r1b')]),
+            ]),
+          ] },
+          { cells: [ round('Lower Bracket - Round 2', [
+            slate('lb2', [enters('drops', 1), winner('lb1')]),
+          ]) ] },
+          { cells: [ round("Loser's Bracket - Round 3", [
+            slate('lb3', [enters('drops', 2), winner('lb2')]),
+          ]) ] },
+          { cells: [ round('Upper Bracket - Finals', [
+            slate('ubf', [winner('ub2a'), winner('ub2b')]),
+          ]) ] },
+          { cells: [ round('Lower Bracket - Finals', [
+            slate('lbf', [loser('ubf'), winner('lb3')]),
+          ]) ] },
+          { cells: [ round('Finals', [
+            slate('gf', [winner('ubf'), winner('lbf')]),
+          ]) ] },
+        ],
+      } ] },
+    ] } ] } };
+
+    /* --- lol.fandom.com: the wiki the seeds come from --- */
+
+    /*
+     * Real wikitext from the LCK's two bracket pages, trimmed to the three
+     * things wiki.ts reads: the Infobox dates, the {{Bracket}} seed keys, and
+     * the Participants rosters that carry a seed. The dates are moved onto the
+     * fixture tournament's own window, so the page filter has something true to
+     * work with whenever this runs.
+     *
+     * Two decoys ride along, because most of what a season hub links is not the
+     * stage you asked for: the Cup is outside the window, and Rounds 3-4 is
+     * inside it with no bracket at all.
+     */
+    const YEAR = day(-30 * DAY).slice(0, 4);
+    const HUB = 'LCK/' + YEAR + ' Season';
+
+    const infobox = (sdate, edate) =>
+      '{{Infobox Tournament\\n|name=x\\n|sdate=' + sdate + '\\n|edate=' + edate + '\\n}}\\n';
+
+    const roster = (team, seed) =>
+      '{{TeamRoster|team=' + team + '\\n' +
+      '|seed=[[' + HUB + '/Rounds 3-4|' + seed + ']]\\n' +
+      '|{{TeamRoster/Line|player=Someone|flag=kr|role=t}}\\n}}\\n{{Box|break}}\\n';
+
+    const WIKI = {};
+    WIKI[HUB] =
+      '{{Tabs}}\\n' +
+      '* [[' + HUB + '/Cup|Cup]]\\n' +
+      '* [[' + HUB + '/Rounds 3-4|Rounds 3-4]]\\n' +
+      '* [[' + HUB + '/Season Play-In|Season Play-In]]\\n' +
+      '* [[' + HUB + '/Season Playoffs|Season Playoffs]]\\n';
+
+    WIKI[HUB + '/Cup'] =
+      infobox(day(-200 * DAY), day(-180 * DAY)) +
+      '{{Bracket|4DE|R1M1_seed_1=1|R1M1_seed_2=2}}\\n';
+
+    WIKI[HUB + '/Rounds 3-4'] =
+      infobox(day(-20 * DAY), day(1 * DAY)) + '== Standings ==\\n{{Standings}}\\n';
+
+    WIKI[HUB + '/Season Play-In'] =
+      infobox(day(2 * DAY), day(4 * DAY)) +
+      '{{Bracket|4Waterfall|cargo=yes|show_bestof=yes\\n' +
+      '|R1M1_class=qualified\\n|R2M1_class=qualified\\n' +
+      '|R1M1_seed_1=5 Legend\\n|R1M1_seed_2=1 Rise\\n' +
+      '|R1M2_seed_1=2 Rise\\n|R1M2_seed_2=3 Rise\\n}}\\n' +
+      '== Participants ==\\n' +
+      roster('KT Rolster', 'Legend Group #5') +
+      roster('HANJIN BRION', 'Rise Group #1/2') +
+      roster('BNK FEARX', 'Rise Group #1/3') +
+      roster('Nongshim RedForce', 'Rise Group #2/3');
+
+    WIKI[HUB + '/Season Playoffs'] =
+      infobox(day(5 * DAY), day(20 * DAY)) +
+      '{{Bracket|6DESeedsLBKOTHReseed|cargo=yes|show_bestof=yes|reseed=selection\\n' +
+      '|R3M3_cargomatch=Round 3_1\\n' +
+      '|R1M1_seed_1=3\\n|R1M1_seed_2=5/6\\n' +
+      '|R1M2_seed_1=4\\n|R1M2_seed_2=5/6\\n' +
+      '|R2M1_seed_1=1\\n|R2M2_seed_1=2\\n}}\\n' +
+      '== Participants ==\\n' +
+      roster('GEN', 'Legend Group #1') +
+      roster('HLE', 'Legend Group #2/3') +
+      roster('T1', 'Legend Group #2/3') +
+      roster('Dplus Kia', 'Legend Group #4');
+
+    /* MediaWiki's own shape: a title it doesn't have comes back as missing. */
+    const wikiPages = (titles) => {
+      const pages = {};
+      titles.forEach((title, index) => {
+        const text = WIKI[title];
+        pages[String(index)] = text === undefined
+          ? { ns: 0, title: title, missing: '' }
+          : { ns: 0, title: title, revisions: [{ slots: { main: { '*': text } } }] };
+      });
+      return { batchcomplete: '', query: { pages: pages } };
+    };
 
     /* --- xskt.com.vn --- */
 
@@ -304,6 +477,8 @@ const FETCH_SHIM = `
 
     globalThis.__fetchCalls = [];
     globalThis.__fetchMode = 'ok';
+    /* The wiki fails on its own switch: an outage there must not be an outage. */
+    globalThis.__wikiDown = false;
 
     const json = (body) => new Response(JSON.stringify(body), {
       status: 200, headers: { 'content-type': 'application/json' },
@@ -326,11 +501,26 @@ const FETCH_SHIM = `
         );
       }
 
+      if (href.includes('lol.fandom.com')) {
+        if (globalThis.__wikiDown) return new Response('', { status: 503 });
+        const titles = (new URL(href).searchParams.get('titles') || '').split('|');
+        return json(wikiPages(titles));
+      }
+
       if (href.includes('getLeagues')) return json(LEAGUES);
       if (href.includes('getTournamentsForLeague')) {
         return json(tournamentsFor(new URL(href).searchParams.get('leagueId')));
       }
-      if (href.includes('getStandingsV3')) return json(STANDINGS);
+      if (href.includes('getStandingsV3')) {
+        /*
+         * The LCK row is the pre-scheduled one, and the KeSPA row the bracket
+         * that has been played. That way round because the wiki's page table
+         * has a rule for the LCK, so the seeding path is exercised end to end
+         * rather than against a title nobody would look up.
+         */
+        const id = new URL(href).searchParams.get('tournamentId');
+        return json(id === 't-98767991310872058' ? PRE_SCHEDULED : STANDINGS);
+      }
 
       const events = globalThis.__fetchMode === 'empty' ? [] : EVENTS;
       return json({ data: { schedule: { events, pages: { older: 'o', newer: 'n' } } } });
@@ -371,19 +561,20 @@ async function main(browser: Cdp) {
   console.log('\ndashboard')
 
   const cards = await page.evaluate<number>('document.querySelectorAll(".tool-card").length')
-  ok('renders one card per registered tool', cards === 4, `${cards} card(s)`)
+  ok('renders one card per registered tool', cards === 5, `${cards} card(s)`)
 
   const names = await page.evaluate<string>(
     '[...document.querySelectorAll(".menu-title")].map(n => n.textContent).join(",")'
   )
   ok(
     'cards name the tools',
-    names === 'Pinterest Dark/Light,T1 Esports Tracker,Task Name Translator,Dò vé số',
+    names ===
+      'Pinterest Dark/Light,T1 Esports Tracker,Task Name Translator,Dò vé số,YouTube Cinema',
     names
   )
 
   const summary = await page.evaluate<string>('document.getElementById("summary").textContent')
-  ok('header summarises active tools', summary === '1 of 4 tools active', JSON.stringify(summary))
+  ok('header summarises active tools', summary === '1 of 5 tools active', JSON.stringify(summary))
 
   const defaultOn = await page.evaluate<boolean>(
     'document.querySelector(".tool-card").dataset.enabled === "true"'
@@ -421,7 +612,7 @@ async function main(browser: Cdp) {
   )
   ok(
     'a flat grid holds elevated tool cards',
-    elevated === 'flat container, 4 rows, 4 lifted',
+    elevated === 'flat container, 5 rows, 5 lifted',
     elevated
   )
 
@@ -449,7 +640,7 @@ async function main(browser: Cdp) {
   await sleep(200)
 
   const offSummary = await page.evaluate<string>('document.getElementById("summary").textContent')
-  ok('switching off updates the header', offSummary === '0 of 4 tools active', offSummary)
+  ok('switching off updates the header', offSummary === '0 of 5 tools active', offSummary)
 
   const written = await page.evaluate<any>('globalThis.__store["fz.tools.v1"]')
   ok(
@@ -472,7 +663,7 @@ async function main(browser: Cdp) {
     `[...document.querySelectorAll('.tool-card')]
        .map(c => c.querySelector('button.menu-open') ? 'open' : 'flat').join(',')`
   )
-  ok('tools with controls are openable', openable === 'flat,open,open,open', openable)
+  ok('tools with controls are openable', openable === 'flat,open,open,open,open', openable)
 
   await page.evaluate('document.querySelector("button.menu-open").click()')
   await sleep(200)
@@ -497,10 +688,14 @@ async function main(browser: Cdp) {
   )
   ok('and drops the labelled row it used to sit in', noRow === 0, `${noRow} row(s)`)
 
+  // A tool's own settings live here; the appearance control must not, and
+  // counting every segment would stop telling the two apart.
   const ownSettings = await page.evaluate<number>(
-    'document.querySelectorAll("#detail-body .segment").length'
+    `document.querySelectorAll(
+       '#detail-body [data-value="system"], #detail-body [data-value="dark"], #detail-body [data-value="light"]'
+     ).length`
   )
-  ok('and shows no appearance of its own', ownSettings === 0, `${ownSettings} control(s)`)
+  ok('and shows no appearance control of its own', ownSettings === 0, `${ownSettings} control(s)`)
 
   await screenshot(page, 'popup-detail')
 
@@ -670,9 +865,47 @@ async function main(browser: Cdp) {
   ok('a card names both sides in the API’s order', sides === 'T1 v GEN', sides)
 
   const foot = await page.evaluate<string>(
-    '[...document.querySelectorAll(".t1-card")[1].querySelectorAll(".t1-card-comp, .t1-card-bo")].map(n => n.textContent).join(" | ")'
+    `(() => {
+       const card = document.querySelectorAll('.t1-card')[1];
+       const steps = [...card.querySelectorAll('.t1-card-comp > span:not(.t1-card-step)')]
+         .map(n => n.textContent);
+       return steps.join(' > ') + ' | ' +
+         card.querySelectorAll('.t1-card-comp .t1-card-step svg').length + ' chevron(s) | ' +
+         card.querySelector('.t1-card-bo').textContent;
+     })()`
   )
-  ok('a card names the competition and format', foot === 'LCK • Week 12 | BO3', foot)
+  ok(
+    'a card names the competition and format, as a breadcrumb',
+    foot === 'LCK > Week 12 | 1 chevron(s) | BO3',
+    foot
+  )
+
+  /*
+   * ...and a card whose match is in a bracket gets the round appended, once the
+   * standings behind it land. The schedule endpoint only ever said "Knockouts";
+   * the round comes from the standings sharing its match ids.
+   */
+  const bracketFoot = await page.evaluate<string>(
+    `(() => {
+       const card = document.querySelector('.t1-card[data-match-id="m5"]');
+       const steps = [...card.querySelectorAll('.t1-card-comp > span:not(.t1-card-step)')]
+         .map(n => n.textContent);
+       return steps.join(' > ') + ' | ' +
+         card.querySelector('.t1-card-open').getAttribute('aria-label');
+     })()`
+  )
+  ok(
+    'and says which round of the bracket it is',
+    bracketFoot ===
+      'KeSPA Cup > Knockouts > Finals | Finals. KeSPA Cup Knockouts: T1 versus NS. Open the tournament.',
+    bracketFoot
+  )
+
+  const untouched = await page.evaluate<string>(
+    `[...document.querySelectorAll('.t1-card[data-match-id="m4"] .t1-card-comp > span:not(.t1-card-step)')]
+       .map(n => n.textContent).join(' > ')`
+  )
+  ok('a group-stage card is left as it was', untouched === 'LCK > Week 12', untouched)
 
   // The slot, not the <img>: these fixtures point at logo URLs that don't
   // resolve offline, and a logo that fails to load removes itself on purpose.
@@ -711,9 +944,16 @@ async function main(browser: Cdp) {
     calls.filter((c) => c.includes('getTournamentsForLeague')).length === 2,
     calls.filter((c) => c.includes('getTournamentsForLeague')).join(' ')
   )
+  // One per tournament on screen — both of the fixture's — and no more: the
+  // rounds are filled in behind the cards, not fetched for every tournament
+  // T1 has ever played in.
+  const standingsCalls = calls.filter((c) => c.includes('getStandings'))
   ok(
-    'does not fetch standings until asked',
-    calls.every((c) => !c.includes('getStandings'))
+    'asks for the standings of the tournaments it is showing, and no others',
+    standingsCalls.length === 2 &&
+      standingsCalls.some((c) => c.includes('t-98767991310872058')) &&
+      standingsCalls.some((c) => c.includes('t-116929044967296666')),
+    standingsCalls.map((c) => new URL(c).searchParams.get('tournamentId')).join(' ')
   )
 
   const cached = await page.evaluate<boolean>(
@@ -776,7 +1016,8 @@ async function main(browser: Cdp) {
   const narrow = await page.evaluate<string>('getComputedStyle(document.body).width')
   ok('the schedule uses the shared popup width', narrow === '780px', narrow)
 
-  await page.evaluate('document.querySelector(".t1-tourney .menu-open").click()')
+  // The KeSPA row: a bracket that has been played out, connectors and all.
+  await page.evaluate('[...document.querySelectorAll(".t1-tourney .menu-open")][1].click()')
   await sleep(900)
 
   const wide = await page.evaluate<string>(
@@ -865,6 +1106,350 @@ async function main(browser: Cdp) {
 
   const narrowAgain = await page.evaluate<string>('getComputedStyle(document.body).width')
   ok('and the popup keeps its shared width', narrowAgain === '780px', narrowAgain)
+
+  // --- a bracket nobody has qualified for yet -----------------------------
+
+  /*
+   * The second tournament is the state a play-in or playoff bracket is in for
+   * most of a split: drawn up in full, with nobody in it. What is checked here
+   * is that every empty slot still says where its team comes from.
+   */
+  console.log('\npre-scheduled bracket')
+
+  await page.evaluate('document.querySelector(".t1-tourney .menu-open").click()')
+  await sleep(900)
+
+  const preStages = await page.evaluate<string>(
+    '[...document.querySelectorAll(".t1-stage-title")].map(n => n.textContent).join(",")'
+  )
+  ok(
+    'stacks the stages of a tournament mid-flight',
+    preStages === 'Group Stage,Play-Ins,Regional Championship',
+    preStages
+  )
+
+  // D7: `crossGroup` is a third section type, and reads as a table like a group.
+  const crossTables = await page.evaluate<string>(
+    `(() => {
+       const tables = [...document.querySelectorAll('.t1-table')];
+       return tables.length + ' tables, rows ' +
+         tables.map(t => t.querySelectorAll('tbody tr').length).join('/');
+     })()`
+  )
+  ok('draws a crossGroup section as a standings table', crossTables === '2 tables, rows 5/5', crossTables)
+
+  // D6: how many of those ten teams reach each bracket.
+  const entries = await page.evaluate<string>(
+    '[...document.querySelectorAll(".t1-bracket-entry")].map(n => n.textContent).join(" | ")'
+  )
+  ok(
+    'says how many teams enter each bracket',
+    entries === '4 teams enter this bracket | 6 teams enter this bracket',
+    entries
+  )
+
+  /*
+   * D2a and D3a, over the whole Regional Championship: the six slots the group
+   * stage feeds it read Qualifier, the two the upper bracket's losers are placed
+   * into read Selection, and everything else names the round it comes out of.
+   */
+  const EXPECTED_SLOTS = [
+    'Qualifier/Qualifier',
+    'Qualifier/Qualifier',
+    'Qualifier/Winner R1',
+    'Qualifier/Winner R1',
+    'Loser R1/Loser R1',
+    'Selection/Winner LB R1',
+    'Selection/Winner LB R2',
+    'Winner UB R2/Winner UB R2',
+    'Loser UB F/Winner LB R3',
+    'Winner UB F/Winner LB F',
+  ].join(' | ')
+
+  const slots = await page.evaluate<string>(
+    `[...document.querySelectorAll('.t1-bracket')[1].querySelectorAll('.t1-bout')].map(b =>
+       [...b.querySelectorAll('.t1-bout-slot')].map(s => s.textContent).join('/')).join(' | ')`
+  )
+  ok('labels every undecided slot with where its team comes from', slots === EXPECTED_SLOTS, slots)
+
+  // D4: the label takes the placeholder logo's width, and keeps the full
+  // sentence for the tooltip.
+  const slotRows = await page.evaluate<string>(
+    `(() => {
+       const rows = [...document.querySelectorAll('.t1-bout-team[data-slot]')];
+       return rows.length + ' slots, ' +
+         rows.filter(r => !r.title).length + ' untitled, ' +
+         rows.filter(r => r.querySelector('span[class*="bg-logo"]')).length + ' badged';
+     })()`
+  )
+  ok('every slot is titled and none carries a badge', slotRows === '26 slots, 0 untitled, 0 badged', slotRows)
+
+  const tip = await page.evaluate<string>(
+    `document.querySelectorAll('.t1-bracket')[1]
+       .querySelectorAll('.t1-bout')[4]
+       .querySelector('.t1-bout-team[data-slot]').title`
+  )
+  ok('spells the round out in full on hover', tip === 'Loser of Round 1', JSON.stringify(tip))
+
+  // D5a: two loser edges into the lower bracket's first round, one more into
+  // its finals, and one in the play-ins.
+  const preLines = await page.evaluate<string>(
+    `document.querySelectorAll('.t1-line').length + ' lines, ' +
+     document.querySelectorAll('.t1-line-loser').length + ' dashed'`
+  )
+  ok("draws the loser's drop as its own edge", preLines === '14 lines, 4 dashed', preLines)
+
+  const dash = await page.evaluate<string>(
+    `getComputedStyle(document.querySelector('.t1-line-loser')).strokeDasharray`
+  )
+  ok('and dashes it from the stylesheet', /^3(px)?[,\s]+3(px)?$/.test(dash), dash)
+
+  // Two group tables push both brackets past the fold, and the popup's view is
+  // its own scroller — so bring them up before the capture.
+  await page.evaluate(
+    `document.querySelectorAll('.t1-stage')[1].scrollIntoView({ block: 'start' })`
+  )
+  await sleep(300)
+  await screenshot(page, 'popup-t1-prescheduled')
+
+  // The wiki is a second server, and the setting that permits it is off.
+  const quietWiki = await page.evaluate<number>(
+    `globalThis.__fetchCalls.filter(u => u.includes('lol.fandom.com')).length`
+  )
+  ok('asks the wiki nothing until it is switched on', quietWiki === 0, `${quietWiki} request(s)`)
+
+  // --- the same bracket, with Leaguepedia switched on ---------------------
+
+  /*
+   * The seeds the API doesn't have. What is checked is the whole path: the
+   * setting gating the request, the season hub leading to the stage pages, the
+   * dates ruling out the ones for other stages, the wikitext parse, and the
+   * pairing of a wiki bracket to the section with the same number of entrants.
+   */
+  console.log('\nleaguepedia seeding')
+
+  await page.evaluate('document.querySelector(".t1-back").click()')
+  await sleep(400)
+  await page.evaluate('document.querySelector(\'.setting [data-value="on"] input\').click()')
+  await sleep(700)
+  await page.evaluate('document.querySelector(".t1-tourney .menu-open").click()')
+  await sleep(1200)
+
+  const wikiCalls = await page.evaluate<string>(
+    `globalThis.__fetchCalls
+       .filter(u => u.includes('lol.fandom.com'))
+       .map(u => new URL(u).searchParams.get('titles'))
+       .join(' >> ')`
+  )
+  // The same year the fixture's tournament window falls in, which is what the
+  // page titles are built from at both ends.
+  const YEAR = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 4)
+  const HUB = `LCK/${YEAR} Season`
+  ok(
+    'reads the season hub, then every stage page in one more request',
+    wikiCalls ===
+      `${HUB} >> ${HUB}/Cup|${HUB}/Rounds 3-4|${HUB}/Season Play-In|${HUB}/Season Playoffs`,
+    wikiCalls
+  )
+
+  /*
+   * Every row of the playoffs bracket, in order. GEN is the Legend group's
+   * first seed and nobody else can be the bracket's, so its box says GEN; HLE
+   * and T1 are both "Legend Group #2/3" and share two slots, so both slots say
+   * so; and the two 5/6 slots belong to teams the page hasn't named at all.
+   */
+  const SEEDED_ROWS = [
+    'HLE/T1,Seed 5/6',
+    'DK,Seed 5/6',
+    'GEN,Winner R1',
+    'HLE/T1,Winner R1',
+    'Loser R1,Loser R1',
+    'Selection,Winner LB R1',
+    'Selection,Winner LB R2',
+    'Winner UB R2,Winner UB R2',
+    'Loser UB F,Winner LB R3',
+    'Winner UB F,Winner LB F',
+  ].join(' | ')
+
+  const seeded = await page.evaluate<string>(
+    `[...document.querySelectorAll('.t1-bracket')[1].querySelectorAll('.t1-bout')].map(b =>
+       [...b.querySelectorAll('.t1-bout-team')].map(r =>
+         (r.querySelector('.t1-bout-code, .t1-bout-slot') || {}).textContent
+       ).join(',')).join(' | ')`
+  )
+  ok('fills every slot the wiki settles, and narrows the rest', seeded === SEEDED_ROWS, seeded)
+
+  // The play-ins: KT is the Legend group's fifth seed and the only team it can
+  // be, so its slot is a team row with a badge. The three Rise teams each hold
+  // a range, so each slot names the two it could be.
+  const playIn = await page.evaluate<string>(
+    `[...document.querySelectorAll('.t1-bracket')[0].querySelectorAll('.t1-bout-team')].map(r =>
+       (r.querySelector('.t1-bout-code, .t1-bout-slot') || {}).textContent).join(' | ')`
+  )
+  ok(
+    'and does the same in the play-ins',
+    playIn === 'KT | BRO/BFX | BRO/NS | BFX/NS | Loser R1 | Winner R1',
+    playIn
+  )
+
+  const filled = await page.evaluate<string>(
+    `[...document.querySelectorAll('.t1-bout-team[data-filled]')].map(r =>
+       (r.querySelector('.t1-bout-code') || {}).textContent + ' ' +
+       (r.querySelector('span[class*="bg-logo"]') ? 'badged' : 'bare') + ' "' + r.title + '"'
+     ).join(' | ')`
+  )
+  ok(
+    'a filled slot is a team row, badge and provenance included',
+    filled ===
+      'KT badged "kt Rolster — Legend Group #5 on Leaguepedia" | ' +
+      'DK badged "Dplus KIA — Legend Group #4 on Leaguepedia" | ' +
+      'GEN badged "Gen.G Esports — Legend Group #1 on Leaguepedia"',
+    filled
+  )
+
+  const paired = await page.evaluate<string>(
+    `(() => {
+       const row = [...document.querySelectorAll('.t1-bracket')[1]
+         .querySelectorAll('.t1-bout-team[data-slot]')].find(r => r.textContent.includes('T1'));
+       const mine = row.querySelector('.t1-bout-slot span.text-accent');
+       const other = [...row.querySelectorAll('.t1-bout-slot span')]
+         .find(s => s !== mine && s.textContent.trim() && s.textContent.trim() !== '/');
+       return row.title + ' | ' + mine.textContent + ' | ' +
+         (getComputedStyle(mine).color === getComputedStyle(other).color ? 'same' : 'apart');
+     })()`
+  )
+  ok(
+    "keeps T1's colour in a slot it might take, and says why in the tooltip",
+    paired === 'Seed 3 — Hanwha Life Esports or T1 | T1 | apart',
+    paired
+  )
+
+  const pairedBadges = await page.evaluate<string>(
+    `(() => {
+       const rows = [...document.querySelectorAll('.t1-bout-team[data-slot]')]
+         .filter(r => r.textContent.includes('/') && !r.textContent.includes('Seed'));
+       const two = rows.filter(r => r.querySelectorAll('span[class*="bg-logo"]').length === 2);
+       return rows.length + ' pairs, ' + two.length + ' with both badges';
+     })()`
+  )
+  ok('both teams in a pair bring their badge', pairedBadges === '5 pairs, 5 with both badges', pairedBadges)
+
+  const notT1 = await page.evaluate<number>(
+    `document.querySelectorAll('.t1-bracket')[1]
+       .querySelectorAll('.t1-bout[data-t1]').length`
+  )
+  ok('but does not call the box T1\'s on that evidence', notT1 === 0, `${notT1} box(es)`)
+
+  const credits = await page.evaluate<string>(
+    `[...document.querySelectorAll('.t1-credit-link')].map(a => a.title + ' -> ' + a.href).join(' >> ')`
+  )
+  ok(
+    'credits the page each set of seeds came from',
+    credits.includes('/Season Play-In -> https://lol.fandom.com/wiki/LCK/') &&
+      credits.includes('/Season Playoffs -> https://lol.fandom.com/wiki/LCK/') &&
+      credits.split(' >> ').length === 2,
+    credits
+  )
+
+  const stamped = await page.evaluate<string>(
+    `[...document.querySelectorAll('.t1-bracket-credit')].map(p => p.textContent).join(' >> ')`
+  )
+  ok(
+    'says when it read the wiki, under the credit',
+    /^Seeding from Leaguepedia, read .+ >> Seeding from Leaguepedia, read .+$/.test(stamped),
+    stamped
+  )
+
+  await page.evaluate(
+    `document.querySelectorAll('.t1-stage')[1].scrollIntoView({ block: 'start' })`
+  )
+  await sleep(300)
+  await screenshot(page, 'popup-t1-seeded')
+
+  /*
+   * The stamp is what decides a re-read, and it is per tournament inside the
+   * stored blob — so opening one tournament is not a refresh of another's copy.
+   * Half an hour old is still good; an hour and a minute is not.
+   */
+  const wikiSoFar = async () =>
+    await page.evaluate<number>(
+      `globalThis.__fetchCalls.filter(u => u.includes('lol.fandom.com')).length`
+    )
+  const age = async (minutes: number) =>
+    await page.evaluate(
+      `globalThis.__local['fz.t1.wiki.v1'].value['t-98767991310872058'].fetchedAt -= ${minutes} * 60000`
+    )
+
+  const stored = await page.evaluate<string>(
+    `(() => {
+       const entry = globalThis.__local['fz.t1.wiki.v1'].value['t-98767991310872058'];
+       return typeof entry.fetchedAt + ',' + entry.brackets.length + ' bracket(s)';
+     })()`
+  )
+  ok('stores what it read, stamped, per tournament', stored === 'number,2 bracket(s)', stored)
+
+  const before = await wikiSoFar()
+  await age(30)
+  await page.evaluate('document.querySelector(".t1-back").click()')
+  await sleep(400)
+  await page.evaluate('document.querySelector(".t1-tourney .menu-open").click()')
+  await sleep(900)
+  const afterHalfHour = await wikiSoFar()
+  ok(
+    'half an hour old is read from storage',
+    afterHalfHour === before,
+    `${afterHalfHour - before} request(s)`
+  )
+
+  await age(31)
+  await page.evaluate('document.querySelector(".t1-back").click()')
+  await sleep(400)
+  await page.evaluate('document.querySelector(".t1-tourney .menu-open").click()')
+  await sleep(1200)
+  const afterAnHour = await wikiSoFar()
+  ok(
+    'past an hour it goes back to the wiki',
+    afterAnHour === before + 2,
+    `${afterAnHour - before} request(s)`
+  )
+
+  const seedsSurvive = await page.evaluate<string>(
+    `[...document.querySelectorAll('.t1-bracket')[0].querySelectorAll('.t1-bout-team')].map(r =>
+       (r.querySelector('.t1-bout-code, .t1-bout-slot') || {}).textContent).join(' | ')`
+  )
+  ok(
+    'and draws the same bracket from the re-read',
+    seedsSurvive === 'KT | BRO/BFX | BRO/NS | BFX/NS | Loser R1 | Winner R1',
+    seedsSurvive
+  )
+
+  // A wiki that answers 503 leaves the bracket exactly as the API described it.
+  await page.evaluate('document.querySelector(".t1-back").click()')
+  await sleep(400)
+  await page.evaluate(
+    'globalThis.__local["fz.t1.wiki.v1"] = undefined, delete globalThis.__local["fz.t1.wiki.v1"]'
+  )
+  await page.evaluate('globalThis.__wikiDown = true')
+  await page.evaluate('document.querySelector(".t1-tourney .menu-open").click()')
+  await sleep(1200)
+
+  const withoutWiki = await page.evaluate<string>(
+    `[...document.querySelectorAll('.t1-bracket')[0].querySelectorAll('.t1-bout-slot')]
+       .map(s => s.textContent).join(' | ')`
+  )
+  ok(
+    'a wiki that will not answer changes nothing',
+    withoutWiki === 'Qualifier | Qualifier | Qualifier | Qualifier | Loser R1 | Winner R1',
+    withoutWiki
+  )
+  const noCredit = await page.evaluate<number>(
+    'document.querySelectorAll(".t1-credit-link").length'
+  )
+  ok('and nothing is credited to it', noCredit === 0, `${noCredit} credit(s)`)
+
+  await page.evaluate('globalThis.__wikiDown = false')
+  await page.evaluate('document.querySelector(".t1-back").click()')
+  await sleep(700)
 
   // --- failure states -----------------------------------------------------
 
@@ -1075,7 +1660,7 @@ async function main(browser: Cdp) {
   const ready = await page.evaluate<string>(fill('xshcm-xstp', '2026-08-15', '004731'))
   ok(
     'a complete form says what it is about to look up',
-    ready === 'Hồ Chí Minh · Thứ Bảy 15/08/2026 | ready',
+    ready === 'Hồ Chí Minh ngày Thứ Bảy 15/08/2026 | ready',
     ready
   )
 
@@ -1254,9 +1839,12 @@ async function main(browser: Cdp) {
     cachedDraws || '(nothing cached)'
   )
 
+  // Three hosts are legitimate by this point: Riot's API, the lottery site,
+  // and the wiki the seeding block switched on. A fourth would be a bug.
   const offSite = await page.evaluate<string>(
     `globalThis.__fetchCalls
        .filter(c => !c.includes('lolesports.com'))
+       .filter(c => !c.startsWith('https://lol.fandom.com/api.php?'))
        .filter(c => !c.startsWith('https://xskt.com.vn/')).join(',')`
   )
   ok('and the tool talks to nowhere else', offSite === '', offSite)
