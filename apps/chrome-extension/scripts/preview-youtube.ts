@@ -459,6 +459,29 @@ async function main(browser: Cdp, css: string, bundle: string) {
     const withdrawn = await until(page, `!document.querySelector(${JSON.stringify(VIEWERS)})`)
     ok('and it is gone once the live data is, same as a stream ending', withdrawn)
 
+    /*
+     * D2 draws the line at "watching", not at ".view-count" existing at all:
+     * an ordinary video's view count and a finished stream's "Streamed live"
+     * text both render through the same class. Neither says a stream is live
+     * right now, so neither should be mistaken for one — this is the
+     * distinction the whole feature rests on, and nothing above exercises it.
+     */
+    await page.evaluate(setLiveViewerCount('12,345 views'))
+    await sleep(300)
+    ok(
+      'and never mistakes an ordinary view count for a live one',
+      await page.evaluate<boolean>(`!document.querySelector(${JSON.stringify(VIEWERS)})`)
+    )
+
+    await page.evaluate(setLiveViewerCount('Streamed live on Jan 1, 2024'))
+    await sleep(300)
+    ok(
+      'nor a finished stream’s “Streamed live” text',
+      await page.evaluate<boolean>(`!document.querySelector(${JSON.stringify(VIEWERS)})`)
+    )
+
+    await page.evaluate(setLiveViewerCount(null))
+
     if (!target.full) {
       // And that the boot got past sync() at all: a hotkey only answers if the
       // listeners after it were reached.
