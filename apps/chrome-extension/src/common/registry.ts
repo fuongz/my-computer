@@ -20,6 +20,7 @@
  * import it through storage.ts.
  */
 
+import { instagramFullSize } from "../tools/instagram-full-size/definition";
 import { lottery } from "../tools/lottery/definition";
 import { pinterestTheme } from "../tools/pinterest-theme/definition";
 import { t1Tracker } from "../tools/t1-tracker/definition";
@@ -33,6 +34,7 @@ export const TOOLS: ToolDefinition[] = [
 	taskNamer,
 	lottery,
 	youtubeCinema,
+	instagramFullSize,
 ];
 
 export function getTool(id: string): ToolDefinition | undefined {

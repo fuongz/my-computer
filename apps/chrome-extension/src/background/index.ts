@@ -1,9 +1,10 @@
 /*
  * The service worker: the context menu, and the only place the API key is read.
  *
- * Everything here belongs to the Task Name Translator. The other two tools need
- * no worker — the Pinterest theme is a declared content script and the T1
- * tracker lives in the popup.
+ * Everything in this file belongs to the Task Name Translator. Instagram Full
+ * Size's downloads live in ./instagram.ts and are only wired up here. The other
+ * tools need no worker — the Pinterest theme and YouTube Cinema are declared
+ * content scripts, and the T1 tracker and the lottery live in the popup.
  *
  * Two rules shape this file:
  *
@@ -34,6 +35,9 @@ import {
 	supportsReplace,
 } from "../tools/task-namer/constants";
 import { toTaskName } from "../tools/task-namer/naming";
+import { listenForInstagramDownloads } from "./instagram";
+
+listenForInstagramDownloads();
 
 const MENU_ID = "fz-translate-to-task-name";
 

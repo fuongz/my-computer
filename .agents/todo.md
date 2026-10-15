@@ -323,3 +323,10 @@ press, Shift+F, Escape, `f` into real fullscreen and back, both settings, and th
 switch. The harness caught two real bugs — the `insertBefore` anchor, and the
 boot-order crash in step 10. Everything after step 7 is verified by build,
 typecheck and local icon renders only.
+
+## Instagram Full Size (FE-02)
+
+1. [x] Pure helpers: shortcode → media id, media-info parsing, file names (`media.ts`), store-only zip writer (`common/zip.ts`).
+2. [x] Content script: hover button over post images, dropdown (View image / Download image / Download all (N)), lightbox; gated on the tool switch.
+3. [x] Service worker: validated download + zip messages via `chrome.downloads`; manifest permissions, registry, build scripts.
+4. [ ] Offline check script (`scripts/check-instagram.ts`), gate, README; hand off V3–V5 for a visual check.
