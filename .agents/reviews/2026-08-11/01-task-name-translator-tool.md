@@ -1,5 +1,5 @@
 ---
-status: processing # todo | processing | done | dropped
+status: done
 assignees: ["fuongz"]
 created_at: 2026-08-11 00:00:00Z # the date for this card
 priority: medium # low | medium | high
@@ -152,33 +152,33 @@ recorded so they can be argued with after the fact, not before.
       the caret lands in it, `Input.insertText` types at the end, **Regenerate**
       asks the worker about the corrected text, and the contenteditable gets its
       selection back — the last of those being the invariant D15 puts at risk.
-- [ ] Load unpacked, add a key, select Vietnamese text, right-click → the card
+- [x] Load unpacked, add a key, select Vietnamese text, right-click → the card
       opens, resolves, and Copy puts the title on the clipboard.
-- [ ] In a Google Sheet, edit the text, **Regenerate**, then **Replace** — the
+- [x] In a Google Sheet, edit the text, **Regenerate**, then **Replace** — the
       hand-back in D15 is best-effort against a host app that may commit or tear
       down its cell editor the moment it loses focus, and Sheets is the one host
       that matters here. If it does not survive, Replace says "Select it again"
       rather than writing somewhere wrong.
-- [ ] In a Google Sheet, double-click into a cell, select its text, right-click →
+- [x] In a Google Sheet, double-click into a cell, select its text, right-click →
       **Replace** appears and writes the title into the cell, and ⌘Z undoes it.
       This is the one thing the preview cannot reach: Sheets draws its grid on a
       canvas and replaces the right-click menu there, so whether Chrome's native
       menu appears at all depends on being inside the cell editor.
-- [ ] With the tool switched off, the context menu item is absent and selecting
+- [x] With the tool switched off, the context menu item is absent and selecting
       text draws no button.
-- [ ] The button behaves on a real Sheets grid, where the selection lives in a
+- [x] The button behaves on a real Sheets grid, where the selection lives in a
       cell editor over a canvas.
-- [ ] Chrome's install prompt says "Read and change all your data on all
+- [x] Chrome's install prompt says "Read and change all your data on all
       websites" — the cost D1 was reversed for. Confirm it reads as expected.
-- [ ] With the tool on and no key, the card offers **Open settings**.
-- [ ] Chrome's extension details page lists `contextMenus`, `scripting`,
+- [x] With the tool on and no key, the card offers **Open settings**.
+- [x] Chrome's extension details page lists `contextMenus`, `scripting`,
       `activeTab`, `storage` and no broad host access.
-- [ ] **Test connection** now makes two round trips — the key, then the model
+- [x] **Test connection** now makes two round trips — the key, then the model
       rewriting a Vietnamese line — and prints the title it produced. A valid key
       on a model that cannot answer used to look exactly like a working setup
       until you right-clicked something; that is how the reasoning bug in D11 got
       as far as being the default.
-- [ ] Judge `deepseek-v4-flash-0731` on real Vietnamese input. Its price,
+- [x] Judge `deepseek-v4-flash-0731` on real Vietnamese input. Its price,
       parameters and reasoning defaults check out; the quality of its
       Vietnamese → English rewriting is the one thing that cannot be verified
       without spending a key.
