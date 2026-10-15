@@ -3,7 +3,7 @@
   "name": "fuongz's Extensions",
   "version": "1.0.0",
   "description": "A small toolbox of browser tweaks, each switched on or off from one dashboard.",
-  "permissions": ["storage", "contextMenus", "scripting", "activeTab"],
+  "permissions": ["storage", "contextMenus", "scripting", "activeTab", "downloads"],
   "host_permissions": [
     "https://*.pinterest.com/*",
     "https://esports-api.lolesports.com/*",
@@ -11,7 +11,10 @@
     "https://static.lolesports.com/*",
     "https://openrouter.ai/*",
     "https://xskt.com.vn/*",
-    "https://www.youtube.com/*"
+    "https://www.youtube.com/*",
+    "https://www.instagram.com/*",
+    "https://*.cdninstagram.com/*",
+    "https://*.fbcdn.net/*"
   ],
   "icons": {
     "16": "assets/icons/icon-16.png",
@@ -31,6 +34,13 @@
       "css": ["dist/tools/youtube-cinema.css"],
       "js": ["dist/tools/youtube-cinema.js"],
       "run_at": "document_start",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://www.instagram.com/*"],
+      "css": ["dist/tools/instagram-full-size.css"],
+      "js": ["dist/tools/instagram-full-size.js"],
+      "run_at": "document_idle",
       "all_frames": false
     },
     {

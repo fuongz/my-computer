@@ -32,10 +32,11 @@ before a second consumer exists is a package shaped by exactly one caller.
 | **Task Name Translator** | Rewrites selected text — Vietnamese or English — as one English task title.              | any page, on right-click |
 | **Dò vé số**             | Checks a Vietnamese lottery ticket against one province's draw on one date.              | the popup itself         |
 | **YouTube Cinema**       | Gives a watch page's video the whole window — no masthead, no comments, no fullscreen.   | `youtube.com`            |
+| **Instagram Full Size**  | A button on every post photo: view it full size, download it, or zip a whole carousel.   | `instagram.com`          |
 
-The extension talks to six servers and no more: pinterest.com and youtube.com
-(nothing, it only restyles them), lolesports.com for the schedule, OpenRouter for
-the task titles,
+The extension talks to seven servers and no more: pinterest.com and youtube.com
+(nothing, it only restyles them), instagram.com and its image CDN for a post's
+full-size photos, lolesports.com for the schedule, OpenRouter for the task titles,
 xskt.com.vn for the lottery results, and lol.fandom.com for the seeds an unfilled
 bracket is waiting on. There is no backend of ours in between — the OpenRouter
 call is billed to a key you paste in Settings and is made only when you pick the
@@ -251,6 +252,51 @@ back into the page the moment YouTube animates a route change.
 The selector is scoped under `ytd-watch-flexy` for one reason: the same
 `#movie_player` element is reparented into `ytd-miniplayer` when the miniplayer
 opens, and a miniplayer pinned to `inset: 0` is not a miniplayer.
+
+## Instagram Full Size
+
+Instagram shows a post's photo at whatever size fits the column and gives no way
+to see it larger or save it. Switch the tool on, hover a photo in the feed, on a
+post's own page or in a post opened over a profile, and a button appears in its
+top-right corner. It opens a menu:
+
+| Item                 | What it does                                                                 |
+| -------------------- | ---------------------------------------------------------------------------- |
+| **View image**       | A lightbox with the photo at full size. On a carousel, ← and → (or the arrows on screen) step through every photo in it. |
+| **Download image**   | Saves the photo on screen — on a carousel, the slide you are looking at — as `{username}_{shortcode}_{n}.jpg`. |
+| **Download all (N)** | Carousels only. Every photo in the post, in one `{username}_{shortcode}.zip`. |
+
+Videos are not handled: on a video slide the first two items are disabled, and
+**Download all** counts and zips the photos only, numbered by their slide so
+`_3` is still the third dot.
+
+**Where the full size comes from.** The `<img>` tags on the page carry 1080px at
+most, and a carousel only renders the slides next to the one on screen, so the
+page alone can neither give the original nor list every photo. The first time a
+post's menu opens, the tool asks Instagram the same thing its own page does —
+`/api/v1/media/{id}/info/`, from the tab you are signed in with, so it can only
+ever see what you can — and gets every slide at its largest size, typically
+1440px. The id is the post's shortcode decoded from base 64, so it costs no
+extra lookup. If that request fails, **View** and **Download image** still work
+from the largest size the `<img>` offers, and **Download all** says it could not
+load the post.
+
+**Which photo is "this one".** The button finds its photo by asking the browser
+what is under the pointer (`elementsFromPoint`), not by walking Instagram's
+markup: the class names there change with every deploy, and a transparent layer
+over each photo takes every mouse event. On a carousel, the slide on screen is
+matched to its place in the post by its CDN file name, which every size of the
+same image shares. Thumbnails — anything inside a link to a post, like a profile
+grid — are left alone; open the post.
+
+**The downloads happen in the worker.** Only there can Chrome name the file,
+and only there do the CDN host permissions let it read the bytes to zip them.
+The zip is written by a small store-only writer (`src/common/zip.ts`, no
+compression: JPEGs do not get smaller), and if building it fails the photos come
+down one by one instead. The worker trusts nothing in the message: it has to
+come from an instagram.com tab with the tool on, every URL has to be on
+Instagram's CDN, and every file name is reduced to a bare name in your
+Downloads folder.
 
 ## The web app
 
@@ -537,6 +583,7 @@ Run every one of these from the repo root.
 | `bun run preview:popup`     | Drive the built popup in headless Chrome and check the dashboard, into `.preview/`. |
 | `bun run preview:task-name` | Drive the task-name card through its three states over a hostile host page. |
 | `bun run preview:youtube`   | Screenshot real YouTube watch pages in cinema mode, and check the player is the viewport. |
+| `bun run check:instagram`   | Offline checks for Instagram Full Size: the zip opens in `unzip` and `tar`, shortcodes decode to the right ids, and media-info answers parse. Opens nothing. |
 
 ### The web app
 
@@ -709,6 +756,10 @@ Those need Load unpacked and a human.
 > gets you real fullscreen. It's off until you switch it on, and it touches
 > nothing but a watch page.
 >
+> • **Instagram Full Size** — hover a photo on Instagram and a small button
+> appears in its corner: view it full size, download it, or download every photo
+> in a carousel as one zip. It's off until you switch it on.
+>
 > One appearance control, in the toolbar popup: follow your system, or pin
 > everything to light or dark.
 >
@@ -724,6 +775,7 @@ Those need Load unpacked and a human.
 | `contextMenus`                         | Puts **Translate to task name** on the right-click menu — only when you have text selected, and only while that tool is switched on. |
 | content script on `http(s)://*/*`      | Task Name Translator's button over a selection, and its popover. It cannot listen for a selection on a page it is not on. This is what Chrome describes as "read and change all your data on all websites"; the script holds no key, makes no request, and does nothing at all while the tool is off. |
 | `scripting` + `activeTab`              | Only to cover tabs that were already open when the extension was installed or reloaded — Chrome does not retro-inject a content script into those. |
+| `downloads`                            | Instagram Full Size saving a photo, or a carousel's zip, under a name of its own. Nothing else is downloaded. |
 | `https://*.pinterest.com/*`            | The Pinterest theme's content script and stylesheet.                      |
 | `https://www.youtube.com/*`            | YouTube Cinema's content script and stylesheet. It reads nothing but the page YouTube already rendered — the video's title included — and makes no request; on anything but a watch page it does nothing at all. |
 | `https://esports-api.lolesports.com/*` | T1's schedule. Only requested once the tracker is switched on.            |
@@ -731,3 +783,5 @@ Those need Load unpacked and a human.
 | `https://static.lolesports.com/*`      | Team logos in the tracker's list.                                         |
 | `https://openrouter.ai/*`              | The task-title call, on your own key, on the click that asks for it.      |
 | `https://xskt.com.vn/*`                | The lottery draw pages. Only requested once **Dò vé số** is switched on, and only for the province and date you ask for. |
+| `https://www.instagram.com/*`          | Instagram Full Size's content script and stylesheet, and the one media-info request per post whose menu you open. Nothing while the tool is off. |
+| `https://*.cdninstagram.com/*`, `https://*.fbcdn.net/*` | Instagram's image CDN: reading a carousel's photos to zip them. |

@@ -1,0 +1,229 @@
+/*
+ * Instagram Full Size — the button over a post's photo, its menu, and the
+ * lightbox.
+ *
+ * Everything here is drawn by content.ts straight onto <body>, outside
+ * Instagram's own tree, so the class names are the only scoping needed. Like
+ * the task-name card, every property these depend on is stated rather than
+ * inherited: Instagram's own resets reach any button on the page.
+ *
+ * One look, dark, in both of Instagram's themes: the button and the menu sit
+ * on a photo, which is light or dark at random, and a dark translucent chip is
+ * what reads on both — Instagram's own carousel arrows make the same call.
+ */
+
+/* --- the button --------------------------------------------------------- */
+
+/* Fixed, and placed by content.ts against the photo's corner on every frame it moves. */
+.fz-ig-button {
+	position: fixed;
+	z-index: 2147483000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0;
+	box-sizing: border-box;
+	width: 32px;
+	height: 32px;
+	margin: 0;
+	padding: 0 0 0 2px;
+	border: 0;
+	border-radius: 999px;
+	background: rgba(0, 0, 0, 0.6);
+	color: #fff;
+	cursor: pointer;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+	transition: background-color 0.1s ease;
+}
+
+.fz-ig-button:hover,
+.fz-ig-button[aria-expanded="true"] {
+	background: rgba(0, 0, 0, 0.8);
+}
+
+.fz-ig-button:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: 2px;
+}
+
+.fz-ig-button svg {
+	display: block;
+	flex: none;
+}
+
+/* The chevron tucks in under the arrow, so the pair reads as one glyph. */
+.fz-ig-button svg + svg {
+	margin-left: -3px;
+}
+
+/* --- the menu ----------------------------------------------------------- */
+
+.fz-ig-menu {
+	position: fixed;
+	z-index: 2147483001;
+	box-sizing: border-box;
+	min-width: 180px;
+	margin: 0;
+	padding: 6px;
+	border-radius: 12px;
+	background: #262626;
+	color: #f5f5f5;
+	font: 400 14px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	text-align: left;
+	box-shadow:
+		0 4px 12px rgba(0, 0, 0, 0.25),
+		0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.fz-ig-menu:focus {
+	outline: none;
+}
+
+.fz-ig-menu [role="menuitem"] {
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	margin: 0;
+	padding: 9px 12px;
+	border: 0;
+	border-radius: 8px;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	text-transform: none;
+	letter-spacing: normal;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.fz-ig-menu [role="menuitem"]:hover:not(:disabled),
+.fz-ig-menu [role="menuitem"]:focus-visible {
+	background: rgba(255, 255, 255, 0.1);
+	outline: none;
+}
+
+.fz-ig-menu [role="menuitem"]:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
+
+.fz-ig-menu-hint {
+	margin: 0;
+	padding: 2px 12px 8px;
+	color: #a8a8a8;
+	font-size: 12px;
+}
+
+/* --- the lightbox ------------------------------------------------------- */
+
+.fz-ig-lightbox {
+	position: fixed;
+	inset: 0;
+	z-index: 2147483002;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 48px 72px;
+	background: rgba(0, 0, 0, 0.92);
+}
+
+/*
+ * As large as the window allows and never larger than the photo: a 1080px
+ * original is not stretched to fill a 2560px screen.
+ */
+.fz-ig-lightbox-image {
+	display: block;
+	max-width: 100%;
+	max-height: 100%;
+	width: auto;
+	height: auto;
+	object-fit: contain;
+	transition: opacity 0.15s ease;
+}
+
+.fz-ig-lightbox.is-loading .fz-ig-lightbox-image {
+	opacity: 0.4;
+}
+
+.fz-ig-lightbox-close,
+.fz-ig-lightbox-prev,
+.fz-ig-lightbox-next {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: 44px;
+	height: 44px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.12);
+	color: #fff;
+	cursor: pointer;
+	transition: background-color 0.1s ease;
+}
+
+.fz-ig-lightbox-close:hover,
+.fz-ig-lightbox-prev:hover,
+.fz-ig-lightbox-next:hover {
+	background: rgba(255, 255, 255, 0.24);
+}
+
+.fz-ig-lightbox-close:focus-visible,
+.fz-ig-lightbox-prev:focus-visible,
+.fz-ig-lightbox-next:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: 2px;
+}
+
+.fz-ig-lightbox-close {
+	top: 16px;
+	right: 16px;
+}
+
+.fz-ig-lightbox-prev {
+	top: 50%;
+	left: 16px;
+	transform: translateY(-50%);
+}
+
+.fz-ig-lightbox-next {
+	top: 50%;
+	right: 16px;
+	transform: translateY(-50%);
+}
+
+.fz-ig-lightbox-close svg,
+.fz-ig-lightbox-prev svg,
+.fz-ig-lightbox-next svg {
+	display: block;
+}
+
+.fz-ig-lightbox-counter {
+	position: absolute;
+	bottom: 16px;
+	left: 50%;
+	transform: translateX(-50%);
+	margin: 0;
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.12);
+	color: #fff;
+	font: 500 13px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fz-ig-button,
+	.fz-ig-lightbox-image,
+	.fz-ig-lightbox-close,
+	.fz-ig-lightbox-prev,
+	.fz-ig-lightbox-next {
+		transition: none;
+	}
+}
