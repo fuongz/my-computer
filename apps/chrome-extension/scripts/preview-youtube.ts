@@ -22,7 +22,18 @@
  * controls, leaving with cinema and — under a real mouse press — actually
  * reaching youtube.com; Shift+F and Escape both toggling from the keyboard;
  * either of the two settings being off doing what it says; and YouTube's own
- * layout coming back intact each time.
+ * layout coming back intact each time. It also verifies the viewer count in
+ * the top right: absent on a page with no live data, appearing the moment
+ * YouTube's own "watching" wording exists, following it when that wording
+ * changes, never duplicated, and gone the moment the wording is — whether
+ * that is a stream ending or cinema itself going off.
+ *
+ * Neither watch page below is actually live, and a real live URL cannot be
+ * pinned to a fixed test the way "Me at the zoo" can — a stream ends on its
+ * own schedule, not this script's. So the viewer count checks synthesize
+ * exactly the DOM shape content.ts's selector looks for, inside the real
+ * ytd-watch-metadata these pages do have, rather than depend on one of
+ * YouTube's livestreams staying live for the run.
  *
  * It does *not* verify: manifest parsing, and the two things a headless tab
  * cannot have — real fullscreen, which the tool stands down for, and a
@@ -47,6 +58,7 @@ const TOOLS_DIR = new URL('../extension/dist/tools', import.meta.url).pathname
 const OUT_DIR = new URL('../.preview', import.meta.url).pathname
 const ATTRIBUTE = 'data-fz-youtube-cinema'
 const BACK = '.fz-cinema-back'
+const VIEWERS = '.fz-cinema-viewers'
 
 /*
  * The window, not the viewport: headless Chrome keeps a few pixels for itself,
@@ -200,6 +212,39 @@ const describe = (box: Box | null) =>
   box
     ? `${Math.round(box.width)}x${Math.round(box.height)} at ${Math.round(box.x)},${Math.round(box.y)}`
     : 'missing'
+
+/**
+ * Synthesizes exactly the DOM shape content.ts's selector looks for — a
+ * `.view-count` inside the page's real `#below`, the video's own info column,
+ * whose text says "watching" — so the viewer count checks below exercise the
+ * shipped selector against neither page actually being live. Passing `null`
+ * removes it, standing in for a stream ending or the page never having had
+ * one.
+ */
+const setLiveViewerCount = (text: string | null) => `
+  (() => {
+    const info = document.querySelector('ytd-watch-flexy #below');
+    if (!info) return false;
+    let renderer = info.querySelector('.fz-preview-view-count');
+    if (${JSON.stringify(text)} === null) {
+      renderer?.remove();
+      return true;
+    }
+    if (!renderer) {
+      // Built with createElement rather than innerHTML: YouTube's own CSP
+      // enforces Trusted Types, which throws on a plain-string innerHTML
+      // assignment.
+      renderer = document.createElement('div');
+      renderer.className = 'fz-preview-view-count';
+      const span = document.createElement('span');
+      span.className = 'view-count';
+      renderer.appendChild(span);
+      info.appendChild(renderer);
+    }
+    renderer.querySelector('.view-count').textContent = ${JSON.stringify(text)};
+    return true;
+  })()
+`
 
 /**
  * A real press on the way home, not element.click(): it sits on top of the video,
@@ -378,6 +423,65 @@ async function main(browser: Cdp, css: string, bundle: string) {
       mounted
     )
 
+    console.log('\n  the livestream viewer count')
+
+    const noOverlayYet = await page.evaluate<boolean>(
+      `!document.querySelector(${JSON.stringify(VIEWERS)})`
+    )
+    ok('neither of these pages is live, so there is no overlay yet', noOverlayYet)
+
+    const injected = await page.evaluate<boolean>(setLiveViewerCount('1,234 watching now'))
+    ok('YouTube’s own live viewer markup can be synthesized', injected)
+
+    const drawn = await until(page, `!!document.querySelector(${JSON.stringify(VIEWERS)})`)
+    ok('the overlay appears once that markup exists', drawn)
+
+    const shows = await page.evaluate<string>(
+      `document.querySelector(${JSON.stringify(VIEWERS)})?.textContent.trim() ?? ''`
+    )
+    ok('and shows the exact text YouTube rendered', shows.includes('1,234 watching now'), shows)
+
+    await shoot(page, `${target.name}-viewers`)
+
+    await page.evaluate(setLiveViewerCount('5,678 watching now'))
+    const updated = await until(
+      page,
+      `(document.querySelector(${JSON.stringify(VIEWERS)})?.textContent ?? '').includes('5,678')`
+    )
+    ok('and follows it when YouTube updates the count', updated)
+
+    const overlayCount = await page.evaluate<number>(
+      `document.querySelectorAll(${JSON.stringify(VIEWERS)}).length`
+    )
+    ok('without ever drawing a second one', overlayCount === 1, `${overlayCount} found`)
+
+    await page.evaluate(setLiveViewerCount(null))
+    const withdrawn = await until(page, `!document.querySelector(${JSON.stringify(VIEWERS)})`)
+    ok('and it is gone once the live data is, same as a stream ending', withdrawn)
+
+    /*
+     * D2 draws the line at "watching", not at ".view-count" existing at all:
+     * an ordinary video's view count and a finished stream's "Streamed live"
+     * text both render through the same class. Neither says a stream is live
+     * right now, so neither should be mistaken for one — this is the
+     * distinction the whole feature rests on, and nothing above exercises it.
+     */
+    await page.evaluate(setLiveViewerCount('12,345 views'))
+    await sleep(300)
+    ok(
+      'and never mistakes an ordinary view count for a live one',
+      await page.evaluate<boolean>(`!document.querySelector(${JSON.stringify(VIEWERS)})`)
+    )
+
+    await page.evaluate(setLiveViewerCount('Streamed live on Jan 1, 2024'))
+    await sleep(300)
+    ok(
+      'nor a finished stream’s “Streamed live” text',
+      await page.evaluate<boolean>(`!document.querySelector(${JSON.stringify(VIEWERS)})`)
+    )
+
+    await page.evaluate(setLiveViewerCount(null))
+
     if (!target.full) {
       // And that the boot got past sync() at all: a hotkey only answers if the
       // listeners after it were reached.
@@ -424,6 +528,11 @@ async function main(browser: Cdp, css: string, bundle: string) {
 
       console.log('\n  leaving cinema')
 
+      // Live data present this time, so leaving cinema — not the data going
+      // away — is what the overlay's disappearance is being pinned on.
+      await page.evaluate(setLiveViewerCount('9,000 watching now'))
+      await until(page, `!!document.querySelector(${JSON.stringify(VIEWERS)})`)
+
       await pressShiftF(page)
       ok('Shift+F leaves cinema', await page.evaluate<boolean>(notInCinema))
 
@@ -444,10 +553,20 @@ async function main(browser: Cdp, css: string, bundle: string) {
       )
       ok('and the way home goes with it, the masthead being back', backGone)
 
+      const viewersGone = await page.evaluate<boolean>(
+        `!document.querySelector(${JSON.stringify(VIEWERS)})`
+      )
+      ok('and the viewer count goes with it too, live data or not', viewersGone)
+
       await shoot(page, `${target.name}-off`)
 
       await pressShiftF(page)
       ok('Shift+F returns to cinema', await page.evaluate<boolean>(inCinema))
+
+      const viewersBack = await until(page, `!!document.querySelector(${JSON.stringify(VIEWERS)})`)
+      ok('with the viewer count back too, the live data never having left', viewersBack)
+
+      await page.evaluate(setLiveViewerCount(null))
 
       console.log('\n  the hotkey')
 

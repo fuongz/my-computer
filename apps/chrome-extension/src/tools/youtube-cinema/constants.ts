@@ -18,6 +18,17 @@ export const CINEMA_ATTRIBUTE = "data-fz-youtube-cinema";
  */
 export const CINEMA_BACK_CLASS = "fz-cinema-back";
 
+/**
+ * Class on the livestream viewer count, top right — the other thing cinema
+ * takes away by hiding `ytd-watch-metadata`. Same deal as the back button:
+ * cinema.css positions and styles it, content.ts only ever toggles its
+ * presence and its text.
+ */
+export const CINEMA_VIEWERS_CLASS = "fz-cinema-viewers";
+
+/** Class on the number itself, inside `.fz-cinema-viewers`. */
+export const CINEMA_VIEWERS_COUNT_CLASS = "fz-cinema-viewers-count";
+
 /** Where that button goes. */
 export const YOUTUBE_HOME = "https://www.youtube.com/";
 

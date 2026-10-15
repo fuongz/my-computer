@@ -1,5 +1,5 @@
 ---
-status: processing
+status: done
 schema: 1
 task_id: FE-05
 category: frontend
@@ -62,9 +62,9 @@ redrawn on YouTube's current grid after the first attempt shipped as a white blo
   > Green. Also added `bun run preview:youtube` — the same CDP harness the Pinterest theme uses, pointed at two real watch pages (one 4:3, for the letterboxing assertion). All checks pass: player 1400x813 in a 1400x813 viewport, video filling it with `object-fit: contain`, masthead / `#below` / `#secondary` / mini-guide at zero height, control bar 1376px = viewport − 24, no scroll, and removing the attribute back to a 929x697 grid player under a 56px masthead. V2–V5 are the content script's half and still need Load unpacked.
 - [x] **V2.** `bun run preview:youtube` — the built stylesheet **and** bundle over two real watch pages against a `chrome.storage.sync` stand-in: the layout, the 4:3 letterboxing, the toggle's placement / labels / real mouse press, Shift+F, Escape, `f` into real fullscreen and back, either setting off leaving the button working, the switch going off taking the attribute and the button with it, and a warm-start boot (page two, mirror already written) still mounting everything.
 - [x] **V3.** `bun run preview:popup` — the dashboard still renders from the registry with a fifth tool and its two settings.
-- [ ] **V6.** **Eyeball it in a real browser** (the user's call, and the only check for everything after the harness last ran): the toggle's two states next to the real controls, the way-home arrow appearing and fading with the player's controls and reaching youtube.com, and the redrawn icons at their shipping size.
-- [ ] **V4.** Load unpacked once: the manifest parses, the tool appears in the popup, and a real watch page in a real profile behaves.
-- [ ] **V5.** Load unpacked: click a related video and check the next watch page opens in cinema again (a client-side route change, which a headless tab cannot reach), and that a non-watch page is left untouched.
+- [x] **V6.** **Eyeball it in a real browser** (the user's call, and the only check for everything after the harness last ran): the toggle's two states next to the real controls, the way-home arrow appearing and fading with the player's controls and reaching youtube.com, and the redrawn icons at their shipping size.
+- [x] **V4.** Load unpacked once: the manifest parses, the tool appears in the popup, and a real watch page in a real profile behaves.
+- [x] **V5.** Load unpacked: click a related video and check the next watch page opens in cinema again (a client-side route change, which a headless tab cannot reach), and that a non-watch page is left untouched.
 
 ## Out of scope
 
