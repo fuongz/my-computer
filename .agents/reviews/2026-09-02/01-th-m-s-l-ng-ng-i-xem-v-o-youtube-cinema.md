@@ -1,5 +1,5 @@
 ---
-status: processing
+status: dropped
 schema: 1
 task_id: FE-06
 category: frontend

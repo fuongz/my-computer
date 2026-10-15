@@ -152,8 +152,8 @@ html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player.ytp-autohide .fz
  * share a centre line the way YouTube's fullscreen title sits beside its own
  * controls. One line, cut with an ellipsis rather than wrapped over the video.
  *
- * Click-through, like the viewer count: it covers a strip of the video where
- * a click has always meant play/pause, and it has nothing of its own to do.
+ * Click-through: it covers a strip of the video where a click has always
+ * meant play/pause, and it has nothing of its own to do.
  */
 html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player .fz-cinema-title {
 	position: absolute;
@@ -174,56 +174,6 @@ html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player .fz-cinema-title
 	transition: opacity 0.1s cubic-bezier(0, 0, 0.2, 1);
 }
 
-/*
- * The viewer count's chip, when there is one, sits on the same row at the
- * right. Its width follows the number, so rather than measure it this keeps
- * a fixed allowance wide enough for "12,345,678 watching now" at its size.
- */
-html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player:has(> .fz-cinema-viewers) .fz-cinema-title {
-	right: 240px;
-}
-
 html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player.ytp-autohide .fz-cinema-title {
-	opacity: 0;
-}
-
-/* --- the viewer count, top right -------------------------------------- */
-
-/*
- * The mirror image of the back button: gated on the same attribute, drawn
- * only while content.ts finds a live viewer count to show, and faded by the
- * same autohide class. `pointer-events: none` rather than the back button's
- * click handler — this one has nothing to do when pressed, and must never be
- * what a click on the video lands on instead of play/pause.
- */
-html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player .fz-cinema-viewers {
-	position: absolute;
-	top: 10px;
-	right: 10px;
-	z-index: 65;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 6px 10px;
-	border-radius: 999px;
-	background: rgba(0, 0, 0, 0.6);
-	color: #fff;
-	font: 500 13px/1.2 Roboto, Arial, sans-serif;
-	/* It lands on whatever the video is showing, same problem the back arrow has. */
-	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
-	pointer-events: none;
-	opacity: 1;
-	transition: opacity 0.1s cubic-bezier(0, 0, 0.2, 1);
-}
-
-html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player .fz-cinema-viewers svg {
-	display: block;
-	width: 16px;
-	height: 16px;
-	flex: none;
-	filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.7));
-}
-
-html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player.ytp-autohide .fz-cinema-viewers {
 	opacity: 0;
 }

@@ -213,14 +213,6 @@ heading YouTube keeps rendering below the video and following it to the next one
 It fades with the arrow and lets clicks through, so a click there is still
 play/pause.
 
-On a livestream, cinema owes it something else: hiding the page below the video
-hides the "N watching now" count with it. So the top right corner gets an eye
-and that same number, read straight out of the DOM YouTube already rendered it
-into — no API call, no new request, just the text the page itself is keeping
-current. It appears only while that wording is actually there, follows it as
-YouTube updates it, and disappears the moment it isn't — a stream ending, the
-page turning out not to be live at all, or cinema itself going off.
-
 Two settings sit on top of that button, and they are two switches rather than one
 either/or because they are not alternatives:
 
@@ -640,13 +632,8 @@ coming back on exit — either setting being off leaving the button working anyw
 and the tool's own switch going off taking the attribute and the button with it
 without a reload.
 
-Neither page is actually live, so the viewer count is checked against a
-livestream synthesized rather than found: the same "N watching now" text
-YouTube writes into the page, in the exact spot the selector reads it from.
-It asserts the overlay stays off with none of that text on the page, appears
-once it exists, shows exactly what YouTube wrote, follows it when that text
-changes, is never drawn twice, and disappears with the text — whether that is
-the live data being pulled or cinema itself going off.
+It also checks the title beside the way home: drawn once, the same text as the
+heading YouTube rendered below the video, and gone with cinema and back with it.
 
 What it can't reach: manifest parsing, and a client-side route change from a
 related video. Those need Load unpacked and a human.
@@ -718,8 +705,7 @@ Those need Load unpacked and a human.
 > tabs, your toolbar and your menu bar. Shift+F gives the normal page back when
 > you want to read the comments, and while the video is filling the window
 > there's an arrow in the top corner that takes you back to YouTube, since the
-> usual logo isn't there to. On a livestream, the top right corner keeps the
-> viewer count you'd otherwise lose along with the rest of the page. `f` still
+> usual logo isn't there to, with the video's title beside it. `f` still
 > gets you real fullscreen. It's off until you switch it on, and it touches
 > nothing but a watch page.
 >
@@ -739,7 +725,7 @@ Those need Load unpacked and a human.
 | content script on `http(s)://*/*`      | Task Name Translator's button over a selection, and its popover. It cannot listen for a selection on a page it is not on. This is what Chrome describes as "read and change all your data on all websites"; the script holds no key, makes no request, and does nothing at all while the tool is off. |
 | `scripting` + `activeTab`              | Only to cover tabs that were already open when the extension was installed or reloaded — Chrome does not retro-inject a content script into those. |
 | `https://*.pinterest.com/*`            | The Pinterest theme's content script and stylesheet.                      |
-| `https://www.youtube.com/*`            | YouTube Cinema's content script and stylesheet. It reads nothing but the page YouTube already rendered — the live viewer count included — and makes no request; on anything but a watch page it does nothing at all. |
+| `https://www.youtube.com/*`            | YouTube Cinema's content script and stylesheet. It reads nothing but the page YouTube already rendered — the video's title included — and makes no request; on anything but a watch page it does nothing at all. |
 | `https://esports-api.lolesports.com/*` | T1's schedule. Only requested once the tracker is switched on.            |
 | `https://lol.fandom.com/*`             | Leaguepedia, for which seed each empty bracket slot is for. Off by default; one request per tournament you open, cached for a day. |
 | `https://static.lolesports.com/*`      | Team logos in the tracker's list.                                         |

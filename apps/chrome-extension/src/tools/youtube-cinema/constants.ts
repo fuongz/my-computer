@@ -12,26 +12,15 @@ export const YOUTUBE_CINEMA_ID = "youtube-cinema";
 export const CINEMA_ATTRIBUTE = "data-fz-youtube-cinema";
 
 /**
- * Class on the one thing the script draws: the way out, top left, over the
- * video — the one control cinema takes away that the page used to provide.
- * cinema.css styles it, so the two have to agree on the name.
+ * Class on the way out, top left, over the video — the one control cinema
+ * takes away that the page used to provide. cinema.css styles it, so the two
+ * have to agree on the name.
  */
 export const CINEMA_BACK_CLASS = "fz-cinema-back";
 
 /**
- * Class on the livestream viewer count, top right — the other thing cinema
- * takes away by hiding `ytd-watch-metadata`. Same deal as the back button:
- * cinema.css positions and styles it, content.ts only ever toggles its
- * presence and its text.
- */
-export const CINEMA_VIEWERS_CLASS = "fz-cinema-viewers";
-
-/** Class on the number itself, inside `.fz-cinema-viewers`. */
-export const CINEMA_VIEWERS_COUNT_CLASS = "fz-cinema-viewers-count";
-
-/**
- * Class on the video's title, top left beside the way home — the third thing
- * hiding `ytd-watch-metadata` takes away. Same split again: cinema.css lays it
+ * Class on the video's title, top left beside the way home — what hiding
+ * `ytd-watch-metadata` takes away. Same split as the button: cinema.css lays it
  * out, content.ts only ever toggles its presence and its text.
  */
 export const CINEMA_TITLE_CLASS = "fz-cinema-title";
