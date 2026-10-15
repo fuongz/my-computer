@@ -59,6 +59,7 @@ const OUT_DIR = new URL('../.preview', import.meta.url).pathname
 const ATTRIBUTE = 'data-fz-youtube-cinema'
 const BACK = '.fz-cinema-back'
 const VIEWERS = '.fz-cinema-viewers'
+const TITLE = '.fz-cinema-title'
 
 /*
  * The window, not the viewport: headless Chrome keeps a few pixels for itself,
@@ -423,6 +424,28 @@ async function main(browser: Cdp, css: string, bundle: string) {
       mounted
     )
 
+    console.log('\n  the title')
+
+    const titled = await until(
+      page,
+      `!!document.querySelector(${JSON.stringify(TITLE)})?.textContent.trim()`
+    )
+    ok('the video’s title is drawn beside the way home', titled)
+
+    const titleMatches = await page.evaluate<boolean>(`
+      (() => {
+        const heading = document.querySelector('ytd-watch-flexy #below ytd-watch-metadata #title h1');
+        const drawn = document.querySelector(${JSON.stringify(TITLE)});
+        return !!heading && !!drawn && drawn.textContent === heading.textContent.trim();
+      })()
+    `)
+    ok('and it is the heading YouTube rendered below the video', titleMatches)
+
+    const titleCount = await page.evaluate<number>(
+      `document.querySelectorAll(${JSON.stringify(TITLE)}).length`
+    )
+    ok('drawn once', titleCount === 1, `${titleCount} found`)
+
     console.log('\n  the livestream viewer count')
 
     const noOverlayYet = await page.evaluate<boolean>(
@@ -440,6 +463,16 @@ async function main(browser: Cdp, css: string, bundle: string) {
       `document.querySelector(${JSON.stringify(VIEWERS)})?.textContent.trim() ?? ''`
     )
     ok('and shows the exact text YouTube rendered', shows.includes('1,234 watching now'), shows)
+
+    const clear = await page.evaluate<string>(`
+      (() => {
+        const t = document.querySelector(${JSON.stringify(TITLE)}).getBoundingClientRect();
+        const v = document.querySelector(${JSON.stringify(VIEWERS)}).getBoundingClientRect();
+        return Math.round(t.right) + ' <= ' + Math.round(v.left);
+      })()
+    `)
+    const [titleRight, chipLeft] = clear.split(' <= ').map(Number)
+    ok('and the title stops short of it', titleRight <= chipLeft, clear)
 
     await shoot(page, `${target.name}-viewers`)
 
@@ -557,6 +590,11 @@ async function main(browser: Cdp, css: string, bundle: string) {
         `!document.querySelector(${JSON.stringify(VIEWERS)})`
       )
       ok('and the viewer count goes with it too, live data or not', viewersGone)
+
+      const titleGone = await page.evaluate<boolean>(
+        `!document.querySelector(${JSON.stringify(TITLE)})`
+      )
+      ok('and the title, YouTube’s own being back below the video', titleGone)
 
       await shoot(page, `${target.name}-off`)
 

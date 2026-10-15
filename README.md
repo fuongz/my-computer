@@ -207,6 +207,12 @@ left corner, where Netflix keeps its own, appearing and fading with the player's
 own controls and going to youtube.com. It exists only while the video is filling
 the window; the moment it isn't, the masthead is back and the arrow is not.
 
+Beside the arrow sits the video's title, which hiding the page below the video
+hides too: one line, cut with an ellipsis when it runs long, read from the
+heading YouTube keeps rendering below the video and following it to the next one.
+It fades with the arrow and lets clicks through, so a click there is still
+play/pause.
+
 On a livestream, cinema owes it something else: hiding the page below the video
 hides the "N watching now" count with it. So the top right corner gets an eye
 and that same number, read straight out of the DOM YouTube already rendered it

@@ -29,6 +29,13 @@ export const CINEMA_VIEWERS_CLASS = "fz-cinema-viewers";
 /** Class on the number itself, inside `.fz-cinema-viewers`. */
 export const CINEMA_VIEWERS_COUNT_CLASS = "fz-cinema-viewers-count";
 
+/**
+ * Class on the video's title, top left beside the way home — the third thing
+ * hiding `ytd-watch-metadata` takes away. Same split again: cinema.css lays it
+ * out, content.ts only ever toggles its presence and its text.
+ */
+export const CINEMA_TITLE_CLASS = "fz-cinema-title";
+
 /** Where that button goes. */
 export const YOUTUBE_HOME = "https://www.youtube.com/";
 

@@ -4,23 +4,24 @@
  * page never has to flash its own layout first.
  *
  * Its job is the html[data-fz-youtube-cinema] attribute cinema.css is scoped
- * to — plus the two things cinema owes the viewer for what hiding the rest of
- * the page takes away: a way home over the video, since hiding the masthead
- * hides the YouTube logo with it, and, on a livestream, the viewer count that
- * lived in the ytd-watch-metadata cinema also hides. Both are read from and
- * drawn over the same #movie_player, and both exist only while the attribute
- * decides they should. That decision comes down to four questions:
+ * to — plus the things cinema owes the viewer for what hiding the rest of the
+ * page takes away: a way home over the video, since hiding the masthead hides
+ * the YouTube logo with it, the video's title beside it, and, on a livestream,
+ * the viewer count — the last two both lived in the ytd-watch-metadata cinema
+ * also hides. All three are drawn over the same #movie_player, and all three
+ * exist only while the attribute decides they should. That decision comes down
+ * to four questions:
  *
  *   - is the tool switched on,
  *   - is this a watch page,
  *   - is the browser already in native fullscreen, which does this better,
  *   - and has Shift+F or Escape said otherwise for this page.
  *
- * Beyond that attribute and those two elements, nothing here touches the page.
- * The video is made big by CSS; the only script YouTube's player hears from is
- * a synthetic resize event, which asks it to re-measure controls it sized in
- * pixels. The viewer count is never fetched — only read back out of the DOM
- * YouTube already rendered it into.
+ * Beyond that attribute and those three elements, nothing here touches the
+ * page. The video is made big by CSS; the only script YouTube's player hears
+ * from is a synthetic resize event, which asks it to re-measure controls it
+ * sized in pixels. The title and the viewer count are never fetched — only
+ * read back out of the DOM YouTube already rendered them into.
  */
 
 import {
@@ -34,6 +35,7 @@ import {
 	AUTO_SETTING,
 	CINEMA_ATTRIBUTE,
 	CINEMA_BACK_CLASS,
+	CINEMA_TITLE_CLASS,
 	CINEMA_VIEWERS_CLASS,
 	CINEMA_VIEWERS_COUNT_CLASS,
 	HOTKEY_SETTING,
@@ -85,6 +87,13 @@ const LIVE_VIEWER_PATTERN = /watching/i;
 let viewers: HTMLDivElement | null = null;
 let viewersCount: HTMLSpanElement | null = null;
 
+/* The title's state, same reasoning again. */
+
+/** What the tab title says around the video's own: an unread count, and the site. */
+const DOCUMENT_TITLE_NOISE = /^\(\d+\)\s+|\s+-\s+YouTube$/g;
+
+let title: HTMLDivElement | null = null;
+
 sync();
 reconcileWithSyncedSettings();
 watchForSettingChanges();
@@ -132,6 +141,7 @@ function sync(): void {
 	// Unconditional: the switch can go off, or the page stop being a watch page,
 	// without the attribute having been on in the first place.
 	ensureBack();
+	ensureTitle();
 	ensureViewers();
 }
 
@@ -301,6 +311,56 @@ function createBackButton(): HTMLButtonElement {
 	return element;
 }
 
+/* --- the title, beside the way out ------------------------------------ */
+
+/**
+ * The heading of `ytd-watch-metadata`, which cinema hides but YouTube keeps
+ * rendering — and keeps current across a client-side route change, which is
+ * when the MutationObserver below sees it change. Scoped to `#below` for the
+ * same reason the viewer count is: never a title out of the related rail.
+ *
+ * The tab title is the fallback for the moment before that heading exists,
+ * with YouTube's unread-notification count and its " - YouTube" taken off.
+ * It can lag the heading by a beat on a route change, which is why it is the
+ * fallback and not the source.
+ */
+function videoTitleText(): string | null {
+	const heading = document.querySelector("ytd-watch-flexy #below ytd-watch-metadata #title h1");
+	const text = heading?.textContent?.trim();
+	if (text) return text;
+
+	const fallback = document.title.replace(DOCUMENT_TITLE_NOISE, "").trim();
+	return fallback && fallback !== "YouTube" ? fallback : null;
+}
+
+/**
+ * One line of text, top left, right of the way home: only while cinema is on
+ * and there is a title to show. Plain text with no ARIA of its own — it is the
+ * same heading YouTube's own page reads out when it is visible. No `title`
+ * attribute for the cut-off case either: cinema.css makes it click-through, so
+ * a click on it is still play/pause, and a click-through element never hovers.
+ */
+function ensureTitle(): void {
+	const text = on ? videoTitleText() : null;
+	if (text === null) {
+		title?.remove();
+		title = null;
+		return;
+	}
+
+	const player = document.querySelector("ytd-watch-flexy #movie_player");
+	if (!player) return;
+
+	if (!title) {
+		title = document.createElement("div");
+		title.className = CINEMA_TITLE_CLASS;
+	}
+	if (title.parentElement !== player) player.append(title);
+
+	// Reusing the one node either way, so the player never ends up with two.
+	if (title.textContent !== text) title.textContent = text;
+}
+
 /* --- the viewer count, top right -------------------------------------- */
 
 /**
@@ -409,7 +469,8 @@ function createViewersOverlay(): { root: HTMLDivElement; count: HTMLSpanElement 
  * anything the page put inside it goes with it. Rather than guess when, this
  * watches for the DOM changing at all and re-checks; the check itself is a
  * parent-node comparison, and it is debounced to once a frame. It is also how
- * the viewer count follows YouTube's own updates to it, and how it notices
+ * the title follows a route change to the next video, how the viewer count
+ * follows YouTube's own updates to it, and how it notices
  * the "watching" wording having left the page — a stream ending, or a route
  * change to a video that was never live.
  *
@@ -425,6 +486,7 @@ function watchForPlayerRebuilds(): void {
 		requestAnimationFrame(() => {
 			queued = false;
 			ensureBack();
+			ensureTitle();
 			ensureViewers();
 		});
 	});

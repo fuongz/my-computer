@@ -145,6 +145,48 @@ html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player.ytp-autohide .fz
 	pointer-events: none;
 }
 
+/* --- the title, beside the way out ------------------------------------ */
+
+/*
+ * On the back arrow's own row: same top and the same 48px line, so the two
+ * share a centre line the way YouTube's fullscreen title sits beside its own
+ * controls. One line, cut with an ellipsis rather than wrapped over the video.
+ *
+ * Click-through, like the viewer count: it covers a strip of the video where
+ * a click has always meant play/pause, and it has nothing of its own to do.
+ */
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player .fz-cinema-title {
+	position: absolute;
+	top: 10px;
+	left: 66px;
+	right: 24px;
+	z-index: 65;
+	height: 48px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: #fff;
+	font: 500 18px/48px Roboto, Arial, sans-serif;
+	/* It lands on whatever the video is showing, same problem the back arrow has. */
+	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+	pointer-events: none;
+	opacity: 1;
+	transition: opacity 0.1s cubic-bezier(0, 0, 0.2, 1);
+}
+
+/*
+ * The viewer count's chip, when there is one, sits on the same row at the
+ * right. Its width follows the number, so rather than measure it this keeps
+ * a fixed allowance wide enough for "12,345,678 watching now" at its size.
+ */
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player:has(> .fz-cinema-viewers) .fz-cinema-title {
+	right: 240px;
+}
+
+html[data-fz-youtube-cinema="on"] ytd-watch-flexy #movie_player.ytp-autohide .fz-cinema-title {
+	opacity: 0;
+}
+
 /* --- the viewer count, top right -------------------------------------- */
 
 /*
